@@ -7,8 +7,11 @@ import {
   notification,
   DatePicker,
   InputNumber,
+  Select,
 } from "antd";
 import { createInvoice } from "../api/api";
+
+const { Option } = Select;
 
 const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
   const [form] = Form.useForm();
@@ -118,11 +121,17 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           rules={[
             {
               required: true,
-              message: "Please enter the status",
+              message: "Please select the status",
             },
           ]}
         >
-          <Input />
+          <Select>
+            <Option value="New">New</Option>
+            <Option value="Sent">Sent</Option>
+            <Option value="Lost">Lost</Option>
+            <Option value="Paid">Paid</Option>
+            <Option value="Cancelled">Cancelled</Option>
+          </Select>
         </Form.Item>
       </Form>
     </Modal>

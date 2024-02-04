@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Modal, Form, Input, Button, notification } from "antd";
+import { Modal, Form, Input, Button, notification, Select } from "antd";
 import { updateInvoice } from "../api/api";
+
+const { Option } = Select;
 
 const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
   const [form] = Form.useForm();
@@ -108,11 +110,17 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
           rules={[
             {
               required: true,
-              message: "Please enter the status",
+              message: "Please select the status",
             },
           ]}
         >
-          <Input />
+          <Select>
+            <Option value="New">New</Option>
+            <Option value="Sent">Sent</Option>
+            <Option value="Lost">Lost</Option>
+            <Option value="Paid">Paid</Option>
+            <Option value="Cancelled">Cancelled</Option>
+          </Select>
         </Form.Item>
         <Form.Item name="notes" label="Notes">
           <Input.TextArea />
@@ -122,7 +130,7 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
           label="Description"
           rules={[
             {
-              required: true,
+              required: false,
               message: "Please enter the description",
             },
           ]}
