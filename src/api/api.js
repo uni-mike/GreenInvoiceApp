@@ -1,7 +1,7 @@
 const BASE_URL = "http://localhost:3000/prod";
 
 // Create a new invoice
-export const createInvoice = async (token, invoiceData) => {
+export const createInvoice = async (invoiceData, token) => {
   try {
     const response = await fetch(`${BASE_URL}/invoices/create`, {
       method: "POST",
@@ -11,6 +11,8 @@ export const createInvoice = async (token, invoiceData) => {
       },
       body: JSON.stringify(invoiceData),
     });
+    console.log("TOKEN: ", token);
+    console.log("RESPONSE: ", response)
     if (!response.ok) {
       throw new Error("Create invoice failed");
     }

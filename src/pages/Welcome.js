@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input } from "antd";
+import { Table, Input, Button } from "antd";
 import { listInvoices } from "../api/api";
+import InvoiceModal from "../modals/InvoiceModal";
 
 const Welcome = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -12,7 +14,7 @@ const Welcome = () => {
     const fetchInvoices = async () => {
       try {
         const data = await listInvoices(token);
-        console.log("invoices_data:", data)
+        console.log("invoices_data:", data);
         setInvoices(data);
       } catch (error) {
         console.error("Failed to fetch invoices:", error);
@@ -24,6 +26,16 @@ const Welcome = () => {
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
+  };
+
+  const handleCreateInvoice = () => {
+    setModalVisible(true);
+  };
+
+  const refreshInvoiceList = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 100)); // Adjust the delay as needed
+    const updatedInvoices = await listInvoices(token); // Fetch the updated list of invoices
+    setInvoices(updatedInvoices);
   };
 
   const filteredInvoices = invoices.filter((invoice) =>
@@ -56,7 +68,6 @@ const Welcome = () => {
       dataIndex: "status",
       key: "status",
     },
-    // Add more columns as needed
   ];
 
   return (
@@ -68,7 +79,23 @@ const Welcome = () => {
         onChange={handleSearch}
         style={{ width: 200, marginBottom: 20 }}
       />
+      <Button
+        type="primary"
+        style={{ marginBottom: 20 }}
+        onClick={handleCreateInvoice}
+      >
+        Issue New Invoice
+      </Button>
       <Table columns={columns} dataSource={filteredInvoices} rowKey="id" />
+      <InvoiceModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onCreate={() => {
+          setModalVisible(false);
+          refreshInvoiceList();
+        }}
+        token={token}
+      />
     </div>
   );
 };
