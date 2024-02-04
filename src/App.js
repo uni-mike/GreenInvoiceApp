@@ -10,12 +10,20 @@ function App() {
 
   return (
     <div className="App">
-<Routes>
-  <Route path="/login" element={<Login />} />
-  <Route path="/welcome" element={<Welcome />} />
-  <Route path="*" element={isAuthenticated ? <Navigate to="/welcome" /> : <Navigate to="/login" />} />
-</Routes>
-
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/welcome" element={<Welcome />} />
+        <Route
+          path="*"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/welcome" />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
     </div>
   );
 }

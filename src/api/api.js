@@ -12,7 +12,7 @@ export const createInvoice = async (invoiceData, token) => {
       body: JSON.stringify(invoiceData),
     });
     console.log("TOKEN: ", token);
-    console.log("RESPONSE: ", response)
+    console.log("RESPONSE: ", response);
     if (!response.ok) {
       throw new Error("Create invoice failed");
     }

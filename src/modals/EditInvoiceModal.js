@@ -14,7 +14,7 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
       const values = await form.validateFields();
       const response = await updateInvoice(token, invoiceData.id, values);
 
-      if (response.message === 'Invoice updated successfully') {
+      if (response.message === "Invoice updated successfully") {
         notification.success({
           message: "Invoice Updated",
           description: "The invoice has been updated successfully.",
@@ -33,7 +33,6 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
       setLoading(false);
     }
   };
-  
 
   return (
     <Modal
