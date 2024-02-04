@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -24,10 +24,10 @@ export function AuthProvider({ children }) {
       try {
         const decoded = jwtDecode(token);
         if (decoded.user_id) {
-          setUser({user_id: decoded.user_id });
+          setUser({ user_id: decoded.user_id });
 
           setIsAuthenticated(true);
-          console.log("isAuthenticated:", isAuthenticated)
+          console.log("isAuthenticated:", isAuthenticated);
         } else {
           console.error("Invalid token");
           setIsAuthenticated(false);
@@ -40,8 +40,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
     }
     setLoaded(true);
-  }, []);
-  
+  }, [isAuthenticated]);
 
   const saveToken = (newToken) => {
     localStorage.setItem("token", newToken);

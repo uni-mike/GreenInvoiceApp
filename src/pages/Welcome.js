@@ -6,13 +6,13 @@ const Welcome = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchText, setSearchText] = useState("");
 
-  // Assuming you have a way to get the current user's token
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
         const data = await listInvoices(token);
+        console.log("invoices_data:", data)
         setInvoices(data);
       } catch (error) {
         console.error("Failed to fetch invoices:", error);

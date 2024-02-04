@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
@@ -10,14 +10,12 @@ function App() {
 
   return (
     <div className="App">
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        {isAuthenticated ? (
-          <Route path="/welcome" element={<Welcome />} />
-        ) : (
-          <Route path="*" element={<Login />} />
-        )}
-      </Routes>
+<Routes>
+  <Route path="/login" element={<Login />} />
+  <Route path="/welcome" element={<Welcome />} />
+  <Route path="*" element={isAuthenticated ? <Navigate to="/welcome" /> : <Navigate to="/login" />} />
+</Routes>
+
     </div>
   );
 }
