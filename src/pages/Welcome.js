@@ -92,6 +92,11 @@ const Welcome = () => {
       key: "total_amount",
     },
     {
+      title: "Tax Amount",
+      dataIndex: "tax_amount",
+      key: "tax_amount",
+    },
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",
