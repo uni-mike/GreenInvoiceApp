@@ -29,11 +29,11 @@ const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      console.log(credentialResponse);
       setLoading(true);
 
       const response = await api.authenticateUser(credentialResponse);
       localStorage.setItem("token", response.token);
+
       setUser(response.user);
       setIsAuthenticated(true);
       navigate("/welcome");
@@ -48,8 +48,6 @@ const Login = () => {
   const handleGoogleError = (error) => {
     setError("Google login failed. Please try again.");
   };
-
-  console.log(clientId);
 
   return (
     <div style={containerStyle}>
