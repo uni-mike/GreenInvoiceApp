@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button } from "antd";
-import { listInvoices } from "../api/api";
+import { Table, Input, Button, Space, notification } from "antd";
+import { listInvoices, deleteInvoice } from "../api/api";
 import InvoiceModal from "../modals/InvoiceModal";
+import EditInvoiceModal from "../modals/EditInvoiceModal";
 
 const Welcome = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -33,9 +36,34 @@ const Welcome = () => {
   };
 
   const refreshInvoiceList = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Adjust the delay as needed
-    const updatedInvoices = await listInvoices(token); // Fetch the updated list of invoices
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const updatedInvoices = await listInvoices(token);
     setInvoices(updatedInvoices);
+  };
+
+  const handleEditInvoice = (invoice) => {
+    setSelectedInvoice(invoice);
+    setEditModalVisible(true);
+  };
+
+  const handleDeleteInvoice = async (invoice) => {
+    try {
+      const confirmMessage = `Are you sure you want to delete invoice ${invoice.invoice_number}?`;
+      if (window.confirm(confirmMessage)) {
+        await deleteInvoice(token, invoice.id);
+        notification.success({
+          message: "Invoice Deleted",
+          description: `Invoice ${invoice.invoice_number} has been deleted successfully.`,
+        });
+        refreshInvoiceList();
+      }
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      notification.error({
+        message: "Delete Invoice Failed",
+        description: "Failed to delete the invoice. Please try again.",
+      });
+    }
   };
 
   const filteredInvoices = invoices.filter((invoice) =>
@@ -68,6 +96,20 @@ const Welcome = () => {
       dataIndex: "status",
       key: "status",
     },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <Space size="middle">
+          <Button type="primary" onClick={() => handleEditInvoice(record)}>
+            Edit
+          </Button>
+          <Button type="danger" onClick={() => handleDeleteInvoice(record)}>
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   return (
@@ -96,6 +138,17 @@ const Welcome = () => {
         }}
         token={token}
       />
+      {editModalVisible && selectedInvoice && (
+        <EditInvoiceModal
+          visible={editModalVisible}
+          onCancel={() => setEditModalVisible(false)}
+          invoiceData={selectedInvoice}
+          onUpdate={() => {
+            setEditModalVisible(false);
+            refreshInvoiceList();
+          }}
+        />
+      )}
     </div>
   );
 };
