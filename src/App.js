@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login";
-import Welcome from "./pages/Welcome";
+import Welcome from "./pages/Invoices";
 import { useAuth } from "./pages/AuthContext";
 import { Layout, Menu } from "antd";
 import {
