@@ -247,13 +247,32 @@ const Invoices = () => {
       title: "Total Amount",
       dataIndex: "total_amount",
       key: "total_amount",
-      render: (text) => <span>${text || "0.00"}</span>,
+      render: (text, record) => (
+        <span>
+          {`${record.currency} ${formatCurrency(text || 0, record.currency)}`}
+        </span>
+      ),
     },
     {
       title: "Tax Amount",
       dataIndex: "tax_amount",
       key: "tax_amount",
-      render: (text) => <span>${text || "0.00"}</span>,
+      render: (text, record) => (
+        <span>
+          {record.tax_rate
+            ? `${record.tax_rate.toFixed(2)}% ${formatCurrency(
+                text || 0,
+                record.currency
+              )}`
+            : `N/A`}
+        </span>
+      ),
+    },
+    {
+      title: "Customer",
+      dataIndex: "customer_name",
+      key: "customer_name",
+      render: (text) => <span>{text || "N/A"}</span>,
     },
     {
       title: "Status",
