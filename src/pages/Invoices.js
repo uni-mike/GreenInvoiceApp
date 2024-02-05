@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, notification } from "antd";
+import { Table, Input, Button, Space, notification, Modal } from "antd";
 import { listInvoices, deleteInvoice } from "../api/api";
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
@@ -10,7 +10,9 @@ const Welcome = () => {
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [viewingInvoice, setViewingInvoice] = useState(null);
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
@@ -47,7 +49,6 @@ const Welcome = () => {
 
   const refreshInvoiceList = async () => {
     const token = localStorage.getItem("token");
-    await new Promise((resolve) => setTimeout(resolve, 100));
     const updatedInvoices = await listInvoices(token);
     setInvoices(updatedInvoices);
   };
@@ -57,24 +58,21 @@ const Welcome = () => {
     setEditModalVisible(true);
   };
 
+  const handleViewInvoice = (invoice) => {
+    setViewingInvoice(invoice);
+    setViewModalVisible(true);
+  };
+
   const handleDeleteInvoice = async (invoice) => {
-    try {
-      const confirmMessage = `Are you sure you want to delete invoice ${invoice.invoice_number}?`;
-      if (window.confirm(confirmMessage)) {
-        const token = localStorage.getItem("token");
-        await deleteInvoice(token, invoice.id);
-        notification.success({
-          message: "Invoice Deleted",
-          description: `Invoice ${invoice.invoice_number} has been deleted successfully.`,
-        });
-        refreshInvoiceList();
-      }
-    } catch (error) {
-      console.error("Error deleting invoice:", error);
-      notification.error({
-        message: "Delete Invoice Failed",
-        description: "Failed to delete the invoice. Please try again.",
+    const confirmMessage = `Are you sure you want to delete invoice ${invoice.invoice_number}?`;
+    if (window.confirm(confirmMessage)) {
+      const token = localStorage.getItem("token");
+      await deleteInvoice(token, invoice.id);
+      notification.success({
+        message: "Invoice Deleted",
+        description: `Invoice ${invoice.invoice_number} has been deleted successfully.`,
       });
+      refreshInvoiceList();
     }
   };
 
@@ -121,7 +119,8 @@ const Welcome = () => {
           <Button type="primary" onClick={() => handleEditInvoice(record)}>
             Edit
           </Button>
-          <Button type="danger" onClick={() => handleDeleteInvoice(record)}>
+          <Button onClick={() => handleViewInvoice(record)}>View</Button>
+          <Button danger onClick={() => handleDeleteInvoice(record)}>
             Delete
           </Button>
         </Space>
@@ -131,7 +130,7 @@ const Welcome = () => {
 
   return (
     <div>
-      <h2>Welcome, {userName || "authenticated user"}!</h2>{" "}
+      <h2>Welcome, {userName || "authenticated user"}</h2>
       <Input
         placeholder="Search Invoices by Number"
         value={searchText}
@@ -166,6 +165,35 @@ const Welcome = () => {
           }}
         />
       )}
+      <Modal
+        title="Invoice Details"
+        visible={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        footer={null}
+      >
+        {viewingInvoice && (
+          <div>
+            <p>Invoice Number: {viewingInvoice.invoice_number}</p>
+            <p>Issue Date: {viewingInvoice.issue_date}</p>
+            <p>Due Date: {viewingInvoice.due_date}</p>
+            <p>Total Amount: {viewingInvoice.total_amount}</p>
+            <p>Tax Amount: {viewingInvoice.tax_amount}</p>
+            <p>Status: {viewingInvoice.status}</p>
+            <p>Supplier Name: {viewingInvoice.supplier_name}</p>
+            <p>Supplier Address: {viewingInvoice.supplier_address}</p>
+            <p>Customer Name: {viewingInvoice.customer_name}</p>
+            <p>Customer Address: {viewingInvoice.customer_address}</p>
+            <p>Currency: {viewingInvoice.currency}</p>
+            <p>Payment Terms: {viewingInvoice.payment_terms}</p>
+            <p>Purchase Order Number: {viewingInvoice.purchase_order_number}</p>
+            <p>Shipping Details: {viewingInvoice.shipping_details}</p>
+            <p>Bank Details: {viewingInvoice.bank_details}</p>
+            <p>
+              Regulatory Information: {viewingInvoice.regulatory_information}
+            </p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

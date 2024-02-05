@@ -137,6 +137,86 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
         >
           <Input.TextArea />
         </Form.Item>
+        {/* New Fields */}
+        <Form.Item
+          name="supplier_name"
+          label="Supplier Name"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the supplier name",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="supplier_address"
+          label="Supplier Address"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the supplier address",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="customer_name"
+          label="Customer Name"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the customer name",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="customer_address"
+          label="Customer Address"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the customer address",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="currency"
+          label="Currency"
+          rules={[
+            {
+              required: true,
+              message: "Please select the currency",
+            },
+          ]}
+        >
+          <Select>
+            <Option value="USD">USD</Option>
+            <Option value="EUR">EUR</Option>
+            <Option value="ILS">ILS</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item name="payment_terms" label="Payment Terms">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item name="purchase_order_number" label="Purchase Order Number">
+          <Input />
+        </Form.Item>
+        <Form.Item name="shipping_details" label="Shipping Details">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item name="bank_details" label="Bank Details">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item name="regulatory_information" label="Regulatory Information">
+          <Input.TextArea />
+        </Form.Item>
       </Form>
     </Modal>
   );
