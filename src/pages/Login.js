@@ -36,7 +36,7 @@ const Login = () => {
 
       setUser(response.user);
       setIsAuthenticated(true);
-      navigate("/welcome");
+      navigate("/invoices");
       setError(null);
     } catch (error) {
       setError("Failed to log in with Google.");

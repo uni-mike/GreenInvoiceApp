@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login";
-import Welcome from "./pages/Invoices";
+import Invoices from "./pages/Invoices";
+import Suppliers from "./pages/Suppliers";
+import Customers from "./pages/Customers";
+
 import { useAuth } from "./pages/AuthContext";
 import { Layout, Menu } from "antd";
+import { UserOutlined, TeamOutlined } from "@ant-design/icons";
 import {
   FileTextOutlined,
   SettingOutlined,
@@ -34,7 +38,13 @@ function App() {
           <div className="logo" />
           <Menu theme="dark" mode="vertical">
             <Menu.Item key="1" icon={<FileTextOutlined />}>
-              <Link to="/welcome">Invoices</Link>
+              <Link to="/invoices">Invoices</Link>
+            </Menu.Item>
+            <Menu.Item key="4" icon={<UserOutlined />}>
+              <Link to="/suppliers">Suppliers</Link>
+            </Menu.Item>
+            <Menu.Item key="5" icon={<TeamOutlined />}>
+              <Link to="/customers">Customers</Link>
             </Menu.Item>
             <Menu.Item key="2" icon={<SettingOutlined />}>
               <Link to="/settings">Settings</Link>
@@ -46,8 +56,10 @@ function App() {
         </Sider>
       )}
       <Layout className="site-layout">
-        <Header className="site-layout-background" style={{ padding: 0 }}>
-        </Header>
+        <Header
+          className="site-layout-background"
+          style={{ padding: 0 }}
+        ></Header>
         <Content style={{ margin: "16px" }}>
           <div
             className="site-layout-background"
@@ -55,12 +67,14 @@ function App() {
           >
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/welcome" element={<Welcome />} />
+              <Route path="/invoices" element={<Invoices />} />
+              <Route path="/suppliers" element={<Suppliers />} />
+              <Route path="/customers" element={<Customers />} />
               <Route
                 path="*"
                 element={
                   isAuthenticated ? (
-                    <Navigate to="/welcome" />
+                    <Navigate to="/invoices" />
                   ) : (
                     <Navigate to="/login" />
                   )
