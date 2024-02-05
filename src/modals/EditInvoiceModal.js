@@ -1,19 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, notification, Select } from "antd";
-import { updateInvoice } from "../api/api";
+import { updateInvoice, listCustomers, listSuppliers } from "../api/api";
 
 const { Option } = Select;
 
 const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const customerData = await listCustomers(token);
+        const supplierData = await listSuppliers(token);
+        setCustomers(customerData);
+        setSuppliers(supplierData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleUpdate = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
 
       const values = await form.validateFields();
+      const token = localStorage.getItem("token");
       const response = await updateInvoice(token, invoiceData.id, values);
 
       if (response.message === "Invoice updated successfully") {
@@ -137,7 +156,6 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
         >
           <Input.TextArea />
         </Form.Item>
-        {/* New Fields */}
         <Form.Item
           name="supplier_name"
           label="Supplier Name"
@@ -148,7 +166,13 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
             },
           ]}
         >
-          <Input />
+          <Select>
+            {suppliers.map((supplier) => (
+              <Option key={supplier.id} value={supplier.name}>
+                {supplier.name}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
         <Form.Item
           name="supplier_address"
@@ -172,7 +196,13 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
             },
           ]}
         >
-          <Input />
+          <Select>
+            {customers.map((customer) => (
+              <Option key={customer.id} value={customer.name}>
+                {customer.name}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
         <Form.Item
           name="customer_address"
