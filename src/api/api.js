@@ -308,7 +308,7 @@ export const deleteCustomer = async (token, customerId) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (response.status === 200 || response.status === 401) {
+    if (response.status !== 200) {
       throw new Error("Delete customer failed");
     }
     const data = await response.json();
@@ -408,9 +408,14 @@ export const deleteSupplier = async (token, supplierId) => {
       },
     });
 
-    if (response.status === 200 || response.status === 401) {
+    if (response.status === 200) {
       const data = await response.json();
       return data;
+    } else if (response.status === 401) {
+      console.error(
+        "Unauthorized: You do not have permission to delete this supplier"
+      );
+      return null;
     } else {
       throw new Error("Delete supplier failed");
     }
