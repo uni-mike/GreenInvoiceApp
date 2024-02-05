@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -9,18 +9,57 @@ import {
   InputNumber,
   Select,
 } from "antd";
-import { createInvoice } from "../api/api";
+import { createInvoice, listCustomers, listSuppliers } from "../api/api";
 
 const { Option } = Select;
 
 const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
   const [form] = Form.useForm();
+  const [customers, setCustomers] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const customerData = await listCustomers(token);
+        const supplierData = await listSuppliers(token);
+        setCustomers(customerData);
+        setSuppliers(supplierData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [token]);
 
   const handleCreate = async () => {
     try {
       const values = await form.validateFields();
-      console.log("Token in modal: ", token);
-      const response = await createInvoice(values, token);
+
+      const selectedCustomerData = customers.find(
+        (customer) => customer.name === values.customer_name
+      );
+      const selectedSupplierData = suppliers.find(
+        (supplier) => supplier.name === values.supplier_name
+      );
+
+      const invoiceData = {
+        ...values,
+        customer_name: selectedCustomerData ? selectedCustomerData.name : "",
+        customer_address: selectedCustomerData
+          ? selectedCustomerData.address
+          : "",
+        supplier_name: selectedSupplierData ? selectedSupplierData.name : "",
+        supplier_address: selectedSupplierData
+          ? selectedSupplierData.address
+          : "",
+      };
+
+      const response = await createInvoice(invoiceData, token);
+
       if (response.invoice_id !== undefined) {
         notification.success({
           message: "Invoice Created",
@@ -43,6 +82,30 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         console.error("Error creating invoice:", error);
       }
     }
+  };
+
+  const handleCustomerSelect = (value) => {
+    const selectedCustomerData = customers.find(
+      (customer) => customer.name === value
+    );
+    setSelectedCustomer(selectedCustomerData);
+    form.setFieldsValue({
+      customer_address: selectedCustomerData
+        ? selectedCustomerData.address
+        : "",
+    });
+  };
+
+  const handleSupplierSelect = (value) => {
+    const selectedSupplierData = suppliers.find(
+      (supplier) => supplier.name === value
+    );
+    setSelectedSupplier(selectedSupplierData);
+    form.setFieldsValue({
+      supplier_address: selectedSupplierData
+        ? selectedSupplierData.address
+        : "",
+    });
   };
 
   return (
@@ -91,6 +154,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           label="Tax Amount"
           rules={[
             {
+              required: true,
               type: "number",
               min: 0,
               message: "Please enter a valid tax amount",
@@ -134,40 +198,22 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           </Select>
         </Form.Item>
         <Form.Item
-          name="supplier_name"
-          label="Supplier Name"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the supplier name",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="supplier_address"
-          label="Supplier Address"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the supplier address",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
           name="customer_name"
           label="Customer Name"
           rules={[
             {
               required: true,
-              message: "Please enter the customer name",
+              message: "Please select the customer name",
             },
           ]}
         >
-          <Input />
+          <Select onChange={handleCustomerSelect}>
+            {customers.map((customer) => (
+              <Option key={customer.id} value={customer.name}>
+                {customer.name}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
         <Form.Item
           name="customer_address"
@@ -176,6 +222,36 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
             {
               required: true,
               message: "Please enter the customer address",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="supplier_name"
+          label="Supplier Name"
+          rules={[
+            {
+              required: true,
+              message: "Please select the supplier name",
+            },
+          ]}
+        >
+          <Select onChange={handleSupplierSelect}>
+            {suppliers.map((supplier) => (
+              <Option key={supplier.id} value={supplier.name}>
+                {supplier.name}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item
+          name="supplier_address"
+          label="Supplier Address"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the supplier address",
             },
           ]}
         >
