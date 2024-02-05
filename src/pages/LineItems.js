@@ -74,7 +74,7 @@ const LineItems = () => {
         await deleteLineItem(token, selectedLineItem.id);
         notification.success({
           message: "Line Item Deleted",
-          description: `Line Item ${selectedLineItem.name} has been deleted successfully.`,
+          description: `Line Item has been deleted successfully.`,
         });
         setDeleteModalVisible(false);
         refreshLineItemList();
