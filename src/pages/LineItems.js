@@ -18,10 +18,16 @@ const LineItems = () => {
   const [addLineItemData, setAddLineItemData] = useState({});
   const [token, setToken] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
+
+    const tokenData = parseJwt(storedToken);
+    if (tokenData && tokenData.user_id) {
+      setUserId(tokenData.user_id);
+    }
 
     const fetchLineItems = async () => {
       try {
@@ -34,6 +40,24 @@ const LineItems = () => {
 
     fetchLineItems();
   }, []);
+
+  function parseJwt(token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = decodeURIComponent(
+        atob(base64Url)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      return JSON.parse(base64);
+    } catch (error) {
+      console.error("Failed to parse JWT token:", error);
+      return null;
+    }
+  }
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
@@ -71,11 +95,20 @@ const LineItems = () => {
 
   const addNewLineItem = async () => {
     try {
-      const data = await createLineItem(token, addLineItemData);
+      const newItemData = {
+        ...addLineItemData,
+        currency: selectedCurrency,
+        user_id: userId,
+      };
+
+      const data = await createLineItem(token, newItemData);
+
       notification.success({
         message: "Line Item Created",
         description: `Line Item ${data.name} has been created successfully.`,
       });
+
+      setAddLineItemData({});
       setAddModalVisible(false);
       refreshLineItemList();
     } catch (error) {
