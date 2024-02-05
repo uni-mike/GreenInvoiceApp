@@ -5,14 +5,17 @@ import Login from "./pages/Login";
 import Invoices from "./pages/Invoices";
 import Suppliers from "./pages/Suppliers";
 import Customers from "./pages/Customers";
+import LineItems from "./pages/LineItems";
 
 import { useAuth } from "./pages/AuthContext";
 import { Layout, Menu } from "antd";
-import { UserOutlined, TeamOutlined } from "@ant-design/icons";
 import {
   FileTextOutlined,
+  UserOutlined,
+  TeamOutlined,
   SettingOutlined,
   LogoutOutlined,
+  AppstoreAddOutlined,
 } from "@ant-design/icons";
 
 const { Header, Sider, Content } = Layout;
@@ -40,16 +43,20 @@ function App() {
             <Menu.Item key="1" icon={<FileTextOutlined />}>
               <Link to="/invoices">Invoices</Link>
             </Menu.Item>
-            <Menu.Item key="4" icon={<UserOutlined />}>
+            <Menu.Item key="2" icon={<UserOutlined />}>
               <Link to="/suppliers">Suppliers</Link>
             </Menu.Item>
-            <Menu.Item key="5" icon={<TeamOutlined />}>
+            <Menu.Item key="3" icon={<TeamOutlined />}>
               <Link to="/customers">Customers</Link>
             </Menu.Item>
-            <Menu.Item key="2" icon={<SettingOutlined />}>
+            <Menu.Item key="4" icon={<SettingOutlined />}>
               <Link to="/settings">Settings</Link>
             </Menu.Item>
-            <Menu.Item key="3" icon={<LogoutOutlined />} onClick={handleLogout}>
+            <Menu.Item key="5" icon={<AppstoreAddOutlined />}>
+              {" "}
+              <Link to="/invoices/lineitems">Line Items</Link>
+            </Menu.Item>
+            <Menu.Item key="6" icon={<LogoutOutlined />} onClick={handleLogout}>
               Logout
             </Menu.Item>
           </Menu>
@@ -70,6 +77,7 @@ function App() {
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/suppliers" element={<Suppliers />} />
               <Route path="/customers" element={<Customers />} />
+              <Route path="/invoices/lineitems" element={<LineItems />} />{" "}
               <Route
                 path="*"
                 element={

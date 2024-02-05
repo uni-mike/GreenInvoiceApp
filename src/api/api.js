@@ -421,3 +421,114 @@ export const deleteSupplier = async (token, supplierId) => {
     throw error;
   }
 };
+
+// Create a new line item
+export const createLineItem = async (token, lineItemData) => {
+  try {
+    const response = await fetch(`${BASE_URL}/line_items/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(lineItemData),
+    });
+    if (!response.ok) {
+      throw new Error("Create line item failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get details of a specific line item
+export const getLineItem = async (token, lineItemId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/line_items/${lineItemId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Get line item failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Update an existing line item
+export const updateLineItem = async (token, lineItemId, updateData) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/line_items/update/${lineItemId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Update line item failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// List all line items for the current user
+export const listLineItems = async (token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/line_items/list`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("List line items failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete a line item
+export const deleteLineItem = async (token, lineItemId) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/line_items/delete/${lineItemId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      const data = await response.json();
+      return data;
+    } else if (response.status === 401) {
+      console.error(
+        "Unauthorized: You do not have permission to delete this line item"
+      );
+      return null;
+    } else {
+      throw new Error("Delete line item failed");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
