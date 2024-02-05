@@ -45,7 +45,7 @@ export const getInvoice = async (token, invoiceId) => {
 // Update an existing invoice
 export const updateInvoice = async (token, invoiceId, updateData) => {
   try {
-    const response = await fetch(`${BASE_URL}/invoices/${invoiceId}`, {
+    const response = await fetch(`${BASE_URL}/invoices/update/${invoiceId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
