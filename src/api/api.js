@@ -218,3 +218,201 @@ export const listUsers = async (token) => {
     throw error;
   }
 };
+
+// Create a new customer
+export const createCustomer = async (customerData, token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/customers/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(customerData),
+    });
+    if (!response.ok) {
+      throw new Error("Create customer failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get details of a specific customer
+export const getCustomer = async (token, customerId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/customers/${customerId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Get customer failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Update an existing customer
+export const updateCustomer = async (token, customerId, updateData) => {
+  try {
+    const response = await fetch(`${BASE_URL}/customers/update/${customerId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updateData),
+    });
+    if (!response.ok) {
+      throw new Error("Update customer failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// List all customers for the current user
+export const listCustomers = async (token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/customers/list`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("List customers failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete a customer
+export const deleteCustomer = async (token, customerId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/customers/delete/${customerId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Delete customer failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Create a new supplier
+export const createSupplier = async (supplierData, token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/suppliers/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(supplierData),
+    });
+    if (!response.ok) {
+      throw new Error("Create supplier failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get details of a specific supplier
+export const getSupplier = async (token, supplierId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/suppliers/${supplierId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Get supplier failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Update an existing supplier
+export const updateSupplier = async (token, supplierId, updateData) => {
+  try {
+    const response = await fetch(`${BASE_URL}/suppliers/update/${supplierId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updateData),
+    });
+    if (!response.ok) {
+      throw new Error("Update supplier failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// List all suppliers for the current user
+export const listSuppliers = async (token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/suppliers/list`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("List suppliers failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete a supplier
+export const deleteSupplier = async (token, supplierId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/suppliers/delete/${supplierId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Delete supplier failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
