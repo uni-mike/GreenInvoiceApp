@@ -27,7 +27,6 @@ export function AuthProvider({ children }) {
           setUser({ user_id: decoded.user_id });
 
           setIsAuthenticated(true);
-          console.log("isAuthenticated:", isAuthenticated);
         } else {
           console.error("Invalid token");
           setIsAuthenticated(false);
