@@ -27,6 +27,20 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
     fetchData();
   }, []);
 
+  const handleCustomerSelect = (value, option) => {
+    const selectedCustomer = customers.find(
+      (customer) => customer.name === value
+    );
+    form.setFieldsValue({ customer_address: selectedCustomer.address });
+  };
+
+  const handleSupplierSelect = (value, option) => {
+    const selectedSupplier = suppliers.find(
+      (supplier) => supplier.name === value
+    );
+    form.setFieldsValue({ supplier_address: selectedSupplier.address });
+  };
+
   const handleUpdate = async () => {
     try {
       setLoading(true);
@@ -157,36 +171,6 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
           <Input.TextArea />
         </Form.Item>
         <Form.Item
-          name="supplier_name"
-          label="Supplier Name"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the supplier name",
-            },
-          ]}
-        >
-          <Select>
-            {suppliers.map((supplier) => (
-              <Option key={supplier.id} value={supplier.name}>
-                {supplier.name}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item
-          name="supplier_address"
-          label="Supplier Address"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the supplier address",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
           name="customer_name"
           label="Customer Name"
           rules={[
@@ -196,7 +180,7 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
             },
           ]}
         >
-          <Select>
+          <Select onSelect={handleCustomerSelect}>
             {customers.map((customer) => (
               <Option key={customer.id} value={customer.name}>
                 {customer.name}
@@ -211,6 +195,36 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
             {
               required: true,
               message: "Please enter the customer address",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="supplier_name"
+          label="Supplier Name"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the supplier name",
+            },
+          ]}
+        >
+          <Select onSelect={handleSupplierSelect}>
+            {suppliers.map((supplier) => (
+              <Option key={supplier.id} value={supplier.name}>
+                {supplier.name}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item
+          name="supplier_address"
+          label="Supplier Address"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the supplier address",
             },
           ]}
         >

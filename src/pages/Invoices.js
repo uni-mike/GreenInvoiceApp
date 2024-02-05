@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Table, Input, Button, Space, notification, Modal } from "antd";
 import { listInvoices, deleteInvoice } from "../api/api";
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import { jwtDecode } from "jwt-decode";
+import { useReactToPrint } from 'react-to-print';
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -14,6 +15,8 @@ const Invoices = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [viewingInvoice, setViewingInvoice] = useState(null);
   const [userName, setUserName] = useState("");
+
+  const componentRef = useRef();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -76,6 +79,12 @@ const Invoices = () => {
     }
   };
 
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    documentTitle: `Invoice-${viewingInvoice?.invoice_number}`,
+    onAfterPrint: () => setViewModalVisible(false),
+  });
+
   const filteredInvoices = invoices.filter((invoice) =>
     invoice.invoice_number.includes(searchText)
   );
@@ -90,39 +99,40 @@ const Invoices = () => {
       title: "Issue Date",
       dataIndex: "issue_date",
       key: "issue_date",
+      render: text => <span>{text || 'N/A'}</span>,
     },
     {
       title: "Due Date",
       dataIndex: "due_date",
       key: "due_date",
+      render: text => <span>{text || 'N/A'}</span>,
     },
     {
       title: "Total Amount",
       dataIndex: "total_amount",
       key: "total_amount",
+      render: text => <span>${text || '0.00'}</span>,
     },
     {
       title: "Tax Amount",
       dataIndex: "tax_amount",
       key: "tax_amount",
+      render: text => <span>${text || '0.00'}</span>,
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: text => <span>{text || 'Pending'}</span>,
     },
     {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => handleEditInvoice(record)}>
-            Edit
-          </Button>
+          <Button type="primary" onClick={() => handleEditInvoice(record)}>Edit</Button>
           <Button onClick={() => handleViewInvoice(record)}>View</Button>
-          <Button danger onClick={() => handleDeleteInvoice(record)}>
-            Delete
-          </Button>
+          <Button danger onClick={() => handleDeleteInvoice(record)}>Delete</Button>
         </Space>
       ),
     },
@@ -169,30 +179,32 @@ const Invoices = () => {
         title="Invoice Details"
         visible={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
-        footer={null}
+        footer={[
+          <Button key="back" onClick={() => setViewModalVisible(false)}>
+            Close
+          </Button>,
+          <Button key="print" type="primary" onClick={handlePrint}>
+            Export to PDF
+          </Button>,
+        ]}
       >
-        {viewingInvoice && (
-          <div>
-            <p>Invoice Number: {viewingInvoice.invoice_number}</p>
-            <p>Issue Date: {viewingInvoice.issue_date}</p>
-            <p>Due Date: {viewingInvoice.due_date}</p>
-            <p>Total Amount: {viewingInvoice.total_amount}</p>
-            <p>Tax Amount: {viewingInvoice.tax_amount}</p>
-            <p>Status: {viewingInvoice.status}</p>
-            <p>Supplier Name: {viewingInvoice.supplier_name}</p>
-            <p>Supplier Address: {viewingInvoice.supplier_address}</p>
-            <p>Customer Name: {viewingInvoice.customer_name}</p>
-            <p>Customer Address: {viewingInvoice.customer_address}</p>
-            <p>Currency: {viewingInvoice.currency}</p>
-            <p>Payment Terms: {viewingInvoice.payment_terms}</p>
-            <p>Purchase Order Number: {viewingInvoice.purchase_order_number}</p>
-            <p>Shipping Details: {viewingInvoice.shipping_details}</p>
-            <p>Bank Details: {viewingInvoice.bank_details}</p>
-            <p>
-              Regulatory Information: {viewingInvoice.regulatory_information}
-            </p>
-          </div>
-        )}
+        <div ref={componentRef} style={{ padding: 20 }}>
+          {viewingInvoice && (
+            <div style={{ fontFamily: "Arial, sans-serif", color: "#555" }}>
+              <h2 style={{ textAlign: "center" }}>Invoice</h2>
+              <p><strong>Invoice Number:</strong> {viewingInvoice.invoice_number}</p>
+              <p><strong>Issue Date:</strong> {viewingInvoice.issue_date}</p>
+              <p><strong>Due Date:</strong> {viewingInvoice.due_date}</p>
+              <p><strong>Total Amount:</strong> ${viewingInvoice.total_amount}</p>
+              <p><strong>Tax Amount:</strong> ${viewingInvoice.tax_amount}</p>
+              <p><strong>Status:</strong> {viewingInvoice.status}</p>
+              <p><strong>Supplier Name:</strong> {viewingInvoice.supplier_name}</p>
+              <p><strong>Supplier Address:</strong> {viewingInvoice.supplier_address}</p>
+              <p><strong>Customer Name:</strong> {viewingInvoice.customer_name}</p>
+              <p><strong>Customer Address:</strong> {viewingInvoice.customer_address}</p>
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );
