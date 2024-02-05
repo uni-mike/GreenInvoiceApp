@@ -125,7 +125,7 @@ const LineItems = () => {
       );
       notification.success({
         message: "Line Item Updated",
-        description: `Line Item ${data.name} has been updated successfully.`,
+        description: `Line Item has been updated successfully.`,
       });
       setEditModalVisible(false);
       refreshLineItemList();
@@ -147,6 +147,13 @@ const LineItems = () => {
     lineItem.name.includes(searchText)
   );
 
+  const formatCurrency = (value) => {
+    if (typeof value === "number") {
+      return `$${value.toFixed(2)}`;
+    }
+    return value;
+  };
+
   const columns = [
     {
       title: "Line Item Name",
@@ -162,6 +169,11 @@ const LineItems = () => {
       title: "Price",
       dataIndex: "price",
       key: "price",
+      render: (text, record) => (
+        <span>
+          {`${record.currency} ${formatCurrency(text || 0, record.currency)}`}
+        </span>
+      ),
     },
     {
       title: "Actions",
