@@ -3,6 +3,17 @@ import { Table, Input, Button, Space, notification } from "antd";
 import { listInvoices, deleteInvoice } from "../api/api";
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
+import { jwtDecode } from "jwt-decode";
+
+const token = localStorage.getItem("token");
+
+const getUserNameFromToken = () => {
+  if (token) {
+    const decoded = jwtDecode(token);
+    return decoded.user_name;
+  }
+  return null;
+};
 
 const Welcome = () => {
   const [invoices, setInvoices] = useState([]);
@@ -11,7 +22,7 @@ const Welcome = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
 
-  const token = localStorage.getItem("token");
+  const userName = React.useMemo(() => getUserNameFromToken(), []);
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -24,7 +35,7 @@ const Welcome = () => {
     };
 
     fetchInvoices();
-  }, [token]);
+  }, []);
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
@@ -118,7 +129,7 @@ const Welcome = () => {
 
   return (
     <div>
-      <h2>Welcome, authenticated user!</h2>
+      <h2>Welcome, {userName || "authenticated user"}!</h2>{" "}
       <Input
         placeholder="Search Invoices by Number"
         value={searchText}
