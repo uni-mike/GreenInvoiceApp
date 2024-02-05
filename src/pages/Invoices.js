@@ -81,83 +81,105 @@ const Invoices = () => {
     const response = await fetch("/template/invoice.html");
     let html = await response.text();
 
-    html = html
-      .replace(/{{invoice.invoice_number}}/g, invoice.invoice_number || "None")
-      .replace(
-        /{{invoice.issue_date}}/g,
-        invoice.issue_date
-          ? new Date(invoice.issue_date).toLocaleDateString()
-          : "None"
-      )
-      .replace(
-        /{{invoice.due_date}}/g,
-        invoice.due_date
-          ? new Date(invoice.due_date).toLocaleDateString()
-          : "None"
-      )
-      .replace(
-        /{{formatCurrency invoice.total_amount}}/g,
-        formatCurrency(invoice.total_amount || 0, invoice.currency)
-      )
-      .replace(
-        /{{formatCurrency invoice.tax_amount}}/g,
-        formatCurrency(invoice.tax_amount || 0, invoice.currency)
-      )
-      .replace(/{{invoice.supplier_name}}/g, invoice.supplier_name || "None")
-      .replace(
-        /{{invoice.supplier_address}}/g,
-        invoice.supplier_address || "None"
-      )
-      .replace(/{{invoice.customer_name}}/g, invoice.customer_name || "None")
-      .replace(
-        /{{invoice.customer_address}}/g,
-        invoice.customer_address || "None"
-      )
-      .replace(/{{invoice.currency}}/g, invoice.currency || "None")
-      .replace(/{{invoice.payment_terms}}/g, invoice.payment_terms || "None")
-      .replace(
-        /{{invoice.purchase_order_number}}/g,
-        invoice.purchase_order_number || "None"
-      )
-      .replace(
-        /{{invoice.shipping_details}}/g,
-        invoice.shipping_details || "None"
-      )
-      .replace(/{{invoice.bank_details}}/g, invoice.bank_details || "None")
-      .replace(
-        /{{invoice.regulatory_information}}/g,
-        invoice.regulatory_information || "None"
-      )
-      .replace(/{{invoice.notes}}/g, invoice.notes || "None");
+    const replacePlaceholders = (placeholder, value) => {
+      html = html.replace(new RegExp(placeholder, "g"), value);
+    };
 
-    // Calculate Subtotal, Tax, and Total
-    const subtotal = invoice.total_amount || 0;
-    const taxRate = parseFloat(invoice.tax_amount || 0); // Convert tax_rate to a number
+    replacePlaceholders(
+      /{{invoice.invoice_number}}/g,
+      invoice.invoice_number || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.issue_date}}/g,
+      invoice.issue_date
+        ? new Date(invoice.issue_date).toLocaleDateString()
+        : "None"
+    );
+    replacePlaceholders(
+      /{{invoice.due_date}}/g,
+      invoice.due_date
+        ? new Date(invoice.due_date).toLocaleDateString()
+        : "None"
+    );
+    replacePlaceholders(
+      /{{invoice.total_amount}}/g,
+      `${invoice.currency} ${formatCurrency(
+        invoice.total_amount || 0,
+        invoice.currency
+      )}`
+    );
+    replacePlaceholders(
+      /{{invoice.tax_amount}}/g,
+      `${invoice.currency} ${formatCurrency(
+        invoice.tax_amount || 0,
+        invoice.currency
+      )}`
+    );
+    replacePlaceholders(
+      /{{invoice.supplier_name}}/g,
+      invoice.supplier_name || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.supplier_address}}/g,
+      invoice.supplier_address || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.customer_name}}/g,
+      invoice.customer_name || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.customer_address}}/g,
+      invoice.customer_address || "None"
+    );
+    replacePlaceholders(/{{invoice.currency}}/g, invoice.currency || "None");
+    replacePlaceholders(
+      /{{invoice.payment_terms}}/g,
+      invoice.payment_terms || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.purchase_order_number}}/g,
+      invoice.purchase_order_number || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.shipping_details}}/g,
+      invoice.shipping_details || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.bank_details}}/g,
+      invoice.bank_details || "None"
+    );
+    replacePlaceholders(
+      /{{invoice.regulatory_information}}/g,
+      invoice.regulatory_information || "None"
+    );
+    replacePlaceholders(/{{invoice.notes}}/g, invoice.notes || "None");
+
+    const subtotal = parseFloat(invoice.total_amount) || 0;
+    const taxRate = parseFloat(invoice.tax_amount || 0);
     const taxAmount = (subtotal * (taxRate / 100)).toFixed(2);
     const total = (parseFloat(subtotal) + parseFloat(taxAmount)).toFixed(2);
 
-    // Replace Subtotal, Tax, and Total in the HTML with proper formatting
-    html = html
-      .replace(
-        /<strong>Subtotal:<\/strong> None/g,
-        `<strong>Subtotal:</strong> ${formatCurrency(
-          subtotal,
-          invoice.currency
-        )}`
-      )
-      .replace(
-        /<strong>Tax \(None%\):<\/strong> None/g,
-        `<strong>Tax (${taxRate.toFixed(2)}%):</strong> ${formatCurrency(
-          taxAmount,
-          invoice.currency
-        )}`
-      )
-      .replace(
-        /<strong>Total:<\/strong> None/g,
-        `<strong>Total:</strong> ${formatCurrency(total, invoice.currency)}`
-      );
+    replacePlaceholders(
+      /<strong>Subtotal:<\/strong> None/g,
+      `<strong>Subtotal:</strong> ${invoice.currency} ${formatCurrency(
+        subtotal,
+        invoice.currency
+      )}`
+    );
+    replacePlaceholders(
+      /<strong>Tax \(None%\):<\/strong> None/g,
+      `<strong>Tax (${taxRate.toFixed(2)}%):</strong> ${
+        invoice.currency
+      } ${formatCurrency(taxAmount, invoice.currency)}`
+    );
+    replacePlaceholders(
+      /<strong>Total:<\/strong> None/g,
+      `<strong>Total:</strong> ${invoice.currency} ${formatCurrency(
+        total,
+        invoice.currency
+      )}`
+    );
 
-    // Dynamically generate line items table
     if (invoice.line_items && invoice.line_items.length > 0) {
       const lineItemsHtml = invoice.line_items
         .map(
@@ -170,13 +192,16 @@ const Invoices = () => {
             ${item.quantity || "None"}
           </td>
           <td style="padding: 8px; border-bottom: 1px solid #ccc;">
-            ${formatCurrency(item.price || 0, invoice.currency)}
+            ${invoice.currency} ${formatCurrency(
+            item.price || 0,
+            invoice.currency
+          )}
           </td>
           <td style="padding: 8px; border-bottom: 1px solid #ccc;">
-            ${formatCurrency(
-              (item.quantity || 0) * (item.price || 0),
-              invoice.currency
-            )}
+            ${invoice.currency} ${formatCurrency(
+            (item.quantity || 0) * (item.price || 0),
+            invoice.currency
+          )}
           </td>
         </tr>
       `
