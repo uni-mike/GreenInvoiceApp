@@ -5,26 +5,26 @@ import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import { jwtDecode } from "jwt-decode";
 
-const token = localStorage.getItem("token");
-
-const getUserNameFromToken = () => {
-  if (token) {
-    const decoded = jwtDecode(token);
-    return decoded.user_name;
-  }
-  return null;
-};
-
 const Welcome = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-
-  const userName = React.useMemo(() => getUserNameFromToken(), []);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUserName(decoded.user_name || "authenticated user");
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        setUserName("authenticated user");
+      }
+    }
+
     const fetchInvoices = async () => {
       try {
         const data = await listInvoices(token);
@@ -46,6 +46,7 @@ const Welcome = () => {
   };
 
   const refreshInvoiceList = async () => {
+    const token = localStorage.getItem("token");
     await new Promise((resolve) => setTimeout(resolve, 100));
     const updatedInvoices = await listInvoices(token);
     setInvoices(updatedInvoices);
@@ -60,6 +61,7 @@ const Welcome = () => {
     try {
       const confirmMessage = `Are you sure you want to delete invoice ${invoice.invoice_number}?`;
       if (window.confirm(confirmMessage)) {
+        const token = localStorage.getItem("token");
         await deleteInvoice(token, invoice.id);
         notification.success({
           message: "Invoice Deleted",
@@ -151,7 +153,7 @@ const Welcome = () => {
           setModalVisible(false);
           refreshInvoiceList();
         }}
-        token={token}
+        token={localStorage.getItem("token")}
       />
       {editModalVisible && selectedInvoice && (
         <EditInvoiceModal
