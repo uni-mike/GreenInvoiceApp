@@ -4,7 +4,7 @@ import { listInvoices, deleteInvoice } from "../api/api";
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import { jwtDecode } from "jwt-decode";
-import { useReactToPrint } from 'react-to-print';
+import { useReactToPrint } from "react-to-print";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -15,6 +15,7 @@ const Invoices = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [viewingInvoice, setViewingInvoice] = useState(null);
   const [userName, setUserName] = useState("");
+  const [invoiceHtml, setInvoiceHtml] = useState("");
 
   const componentRef = useRef();
 
@@ -30,47 +31,38 @@ const Invoices = () => {
       }
     }
 
-    const fetchInvoices = async () => {
-      try {
-        const data = await listInvoices(token);
-        setInvoices(data);
-      } catch (error) {
-        console.error("Failed to fetch invoices:", error);
-      }
-    };
-
-    fetchInvoices();
+    fetchInvoices(token);
   }, []);
 
-  const handleSearch = (e) => {
-    setSearchText(e.target.value);
+  const fetchInvoices = async (token) => {
+    try {
+      const data = await listInvoices(token);
+      setInvoices(data);
+    } catch (error) {
+      console.error("Failed to fetch invoices:", error);
+    }
   };
 
-  const handleCreateInvoice = () => {
-    setModalVisible(true);
-  };
-
-  const refreshInvoiceList = async () => {
-    const token = localStorage.getItem("token");
-    const updatedInvoices = await listInvoices(token);
-    setInvoices(updatedInvoices);
-  };
+  const handleSearch = (e) => setSearchText(e.target.value);
+  const handleCreateInvoice = () => setModalVisible(true);
+  const refreshInvoiceList = () => fetchInvoices(localStorage.getItem("token"));
 
   const handleEditInvoice = (invoice) => {
     setSelectedInvoice(invoice);
     setEditModalVisible(true);
   };
 
-  const handleViewInvoice = (invoice) => {
+  const handleViewInvoice = async (invoice) => {
     setViewingInvoice(invoice);
+    const html = await loadInvoiceTemplate(invoice);
+    setInvoiceHtml(html);
     setViewModalVisible(true);
   };
 
   const handleDeleteInvoice = async (invoice) => {
     const confirmMessage = `Are you sure you want to delete invoice ${invoice.invoice_number}?`;
     if (window.confirm(confirmMessage)) {
-      const token = localStorage.getItem("token");
-      await deleteInvoice(token, invoice.id);
+      await deleteInvoice(localStorage.getItem("token"), invoice.id);
       notification.success({
         message: "Invoice Deleted",
         description: `Invoice ${invoice.invoice_number} has been deleted successfully.`,
@@ -85,9 +77,128 @@ const Invoices = () => {
     onAfterPrint: () => setViewModalVisible(false),
   });
 
-  const filteredInvoices = invoices.filter((invoice) =>
-    invoice.invoice_number.includes(searchText)
-  );
+  const loadInvoiceTemplate = async (invoice) => {
+    const response = await fetch("/template/invoice.html");
+    let html = await response.text();
+
+    html = html
+      .replace(/{{invoice.invoice_number}}/g, invoice.invoice_number || "None")
+      .replace(
+        /{{invoice.issue_date}}/g,
+        invoice.issue_date
+          ? new Date(invoice.issue_date).toLocaleDateString()
+          : "None"
+      )
+      .replace(
+        /{{invoice.due_date}}/g,
+        invoice.due_date
+          ? new Date(invoice.due_date).toLocaleDateString()
+          : "None"
+      )
+      .replace(
+        /{{formatCurrency invoice.total_amount}}/g,
+        formatCurrency(invoice.total_amount || 0, invoice.currency)
+      )
+      .replace(
+        /{{formatCurrency invoice.tax_amount}}/g,
+        formatCurrency(invoice.tax_amount || 0, invoice.currency)
+      )
+      .replace(/{{invoice.supplier_name}}/g, invoice.supplier_name || "None")
+      .replace(
+        /{{invoice.supplier_address}}/g,
+        invoice.supplier_address || "None"
+      )
+      .replace(/{{invoice.customer_name}}/g, invoice.customer_name || "None")
+      .replace(
+        /{{invoice.customer_address}}/g,
+        invoice.customer_address || "None"
+      )
+      .replace(/{{invoice.currency}}/g, invoice.currency || "None")
+      .replace(/{{invoice.payment_terms}}/g, invoice.payment_terms || "None")
+      .replace(
+        /{{invoice.purchase_order_number}}/g,
+        invoice.purchase_order_number || "None"
+      )
+      .replace(
+        /{{invoice.shipping_details}}/g,
+        invoice.shipping_details || "None"
+      )
+      .replace(/{{invoice.bank_details}}/g, invoice.bank_details || "None")
+      .replace(
+        /{{invoice.regulatory_information}}/g,
+        invoice.regulatory_information || "None"
+      )
+      .replace(/{{invoice.notes}}/g, invoice.notes || "None");
+
+    // Calculate Subtotal, Tax, and Total
+    const subtotal = invoice.total_amount || 0;
+    const taxRate = parseFloat(invoice.tax_amount || 0); // Convert tax_rate to a number
+    const taxAmount = (subtotal * (taxRate / 100)).toFixed(2);
+    const total = (parseFloat(subtotal) + parseFloat(taxAmount)).toFixed(2);
+
+    // Replace Subtotal, Tax, and Total in the HTML with proper formatting
+    html = html
+      .replace(
+        /<strong>Subtotal:<\/strong> None/g,
+        `<strong>Subtotal:</strong> ${formatCurrency(
+          subtotal,
+          invoice.currency
+        )}`
+      )
+      .replace(
+        /<strong>Tax \(None%\):<\/strong> None/g,
+        `<strong>Tax (${taxRate.toFixed(2)}%):</strong> ${formatCurrency(
+          taxAmount,
+          invoice.currency
+        )}`
+      )
+      .replace(
+        /<strong>Total:<\/strong> None/g,
+        `<strong>Total:</strong> ${formatCurrency(total, invoice.currency)}`
+      );
+
+    // Dynamically generate line items table
+    if (invoice.line_items && invoice.line_items.length > 0) {
+      const lineItemsHtml = invoice.line_items
+        .map(
+          (item) => `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
+            ${item.description || "None"}
+          </td>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
+            ${item.quantity || "None"}
+          </td>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
+            ${formatCurrency(item.price || 0, invoice.currency)}
+          </td>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
+            ${formatCurrency(
+              (item.quantity || 0) * (item.price || 0),
+              invoice.currency
+            )}
+          </td>
+        </tr>
+      `
+        )
+        .join("");
+      html = html.replace(/<!-- Repeat for each item -->/g, lineItemsHtml);
+    } else {
+      html = html.replace(
+        /<!-- Repeat for each item -->/g,
+        "<tr><td colspan='4' style='text-align: center;'>No items</td></tr>"
+      );
+    }
+
+    return html;
+  };
+
+  const formatCurrency = (value) => {
+    if (typeof value === "number") {
+      return `$${value.toFixed(2)}`;
+    }
+    return value;
+  };
 
   const columns = [
     {
@@ -99,48 +210,56 @@ const Invoices = () => {
       title: "Issue Date",
       dataIndex: "issue_date",
       key: "issue_date",
-      render: text => <span>{text || 'N/A'}</span>,
+      render: (text) => <span>{text || "N/A"}</span>,
     },
     {
       title: "Due Date",
       dataIndex: "due_date",
       key: "due_date",
-      render: text => <span>{text || 'N/A'}</span>,
+      render: (text) => <span>{text || "N/A"}</span>,
     },
     {
       title: "Total Amount",
       dataIndex: "total_amount",
       key: "total_amount",
-      render: text => <span>${text || '0.00'}</span>,
+      render: (text) => <span>${text || "0.00"}</span>,
     },
     {
       title: "Tax Amount",
       dataIndex: "tax_amount",
       key: "tax_amount",
-      render: text => <span>${text || '0.00'}</span>,
+      render: (text) => <span>${text || "0.00"}</span>,
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: text => <span>{text || 'Pending'}</span>,
+      render: (text) => <span>{text || "Pending"}</span>,
     },
     {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => handleEditInvoice(record)}>Edit</Button>
+          <Button type="primary" onClick={() => handleEditInvoice(record)}>
+            Edit
+          </Button>
           <Button onClick={() => handleViewInvoice(record)}>View</Button>
-          <Button danger onClick={() => handleDeleteInvoice(record)}>Delete</Button>
+          <Button danger onClick={() => handleDeleteInvoice(record)}>
+            Delete
+          </Button>
         </Space>
       ),
     },
   ];
 
+  const filteredInvoices = invoices.filter((invoice) =>
+    invoice.invoice_number.includes(searchText)
+  );
+
   return (
     <div>
-      <h2>Welcome, {userName || "authenticated user"}</h2>
+      <h2>Welcome, {userName}</h2>
       <Input
         placeholder="Search Invoices by Number"
         value={searchText}
@@ -158,10 +277,7 @@ const Invoices = () => {
       <InvoiceModal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
-        onCreate={() => {
-          setModalVisible(false);
-          refreshInvoiceList();
-        }}
+        onCreate={refreshInvoiceList}
         token={localStorage.getItem("token")}
       />
       {editModalVisible && selectedInvoice && (
@@ -169,10 +285,7 @@ const Invoices = () => {
           visible={editModalVisible}
           onCancel={() => setEditModalVisible(false)}
           invoiceData={selectedInvoice}
-          onUpdate={() => {
-            setEditModalVisible(false);
-            refreshInvoiceList();
-          }}
+          onUpdate={refreshInvoiceList}
         />
       )}
       <Modal
@@ -188,23 +301,11 @@ const Invoices = () => {
           </Button>,
         ]}
       >
-        <div ref={componentRef} style={{ padding: 20 }}>
-          {viewingInvoice && (
-            <div style={{ fontFamily: "Arial, sans-serif", color: "#555" }}>
-              <h2 style={{ textAlign: "center" }}>Invoice</h2>
-              <p><strong>Invoice Number:</strong> {viewingInvoice.invoice_number}</p>
-              <p><strong>Issue Date:</strong> {viewingInvoice.issue_date}</p>
-              <p><strong>Due Date:</strong> {viewingInvoice.due_date}</p>
-              <p><strong>Total Amount:</strong> ${viewingInvoice.total_amount}</p>
-              <p><strong>Tax Amount:</strong> ${viewingInvoice.tax_amount}</p>
-              <p><strong>Status:</strong> {viewingInvoice.status}</p>
-              <p><strong>Supplier Name:</strong> {viewingInvoice.supplier_name}</p>
-              <p><strong>Supplier Address:</strong> {viewingInvoice.supplier_address}</p>
-              <p><strong>Customer Name:</strong> {viewingInvoice.customer_name}</p>
-              <p><strong>Customer Address:</strong> {viewingInvoice.customer_address}</p>
-            </div>
-          )}
-        </div>
+        <div
+          ref={componentRef}
+          dangerouslySetInnerHTML={{ __html: invoiceHtml }}
+          style={{ overflowY: "scroll", maxHeight: "70vh" }}
+        />
       </Modal>
     </div>
   );
