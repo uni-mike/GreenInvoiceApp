@@ -17,6 +17,7 @@ const Suppliers = () => {
   const [selectedSupplierData, setSelectedSupplierData] = useState({});
   const [addSupplierData, setAddSupplierData] = useState({});
   const [token, setToken] = useState("");
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
@@ -174,6 +175,7 @@ const Suppliers = () => {
           onChange={(e) =>
             setAddSupplierData({ ...addSupplierData, name: e.target.value })
           }
+          style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Supplier Address"
@@ -181,6 +183,7 @@ const Suppliers = () => {
           onChange={(e) =>
             setAddSupplierData({ ...addSupplierData, address: e.target.value })
           }
+          style={{ marginBottom: 10 }}
         />
       </Modal>
       <Modal
@@ -198,6 +201,7 @@ const Suppliers = () => {
               name: e.target.value,
             })
           }
+          style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Supplier Address"
@@ -208,6 +212,7 @@ const Suppliers = () => {
               address: e.target.value,
             })
           }
+          style={{ marginBottom: 10 }}
         />
       </Modal>
     </div>

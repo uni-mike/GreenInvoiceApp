@@ -175,6 +175,7 @@ const Customers = () => {
           onChange={(e) =>
             setAddCustomerData({ ...addCustomerData, name: e.target.value })
           }
+          style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Customer Address"
@@ -182,6 +183,7 @@ const Customers = () => {
           onChange={(e) =>
             setAddCustomerData({ ...addCustomerData, address: e.target.value })
           }
+          style={{ marginBottom: 10 }}
         />
       </Modal>
       <Modal
@@ -199,6 +201,7 @@ const Customers = () => {
               name: e.target.value,
             })
           }
+          style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Customer Address"
@@ -209,6 +212,7 @@ const Customers = () => {
               address: e.target.value,
             })
           }
+          style={{ marginBottom: 10 }}
         />
       </Modal>
     </div>

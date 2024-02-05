@@ -45,7 +45,7 @@ export const getInvoice = async (token, invoiceId) => {
 // Update an existing invoice
 export const updateInvoice = async (token, invoiceId, updateData) => {
   try {
-    const response = await fetch(`${BASE_URL}/invoices/update/${invoiceId}`, {
+    const response = await fetch(`${BASE_URL}/invoices/${invoiceId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -163,7 +163,7 @@ export const authenticateUser = async (credentials) => {
 // Update user details
 export const updateUser = async (token, userId, updateData) => {
   try {
-    const response = await fetch(`${BASE_URL}/users/update/${userId}`, {
+    const response = await fetch(`${BASE_URL}/users/${userId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -220,7 +220,7 @@ export const listUsers = async (token) => {
 };
 
 // Create a new customer
-export const createCustomer = async (customerData, token) => {
+export const createCustomer = async (token, customerData) => {
   try {
     const response = await fetch(`${BASE_URL}/customers/create`, {
       method: "POST",
@@ -262,7 +262,7 @@ export const getCustomer = async (token, customerId) => {
 // Update an existing customer
 export const updateCustomer = async (token, customerId, updateData) => {
   try {
-    const response = await fetch(`${BASE_URL}/customers/update/${customerId}`, {
+    const response = await fetch(`${BASE_URL}/customers/${customerId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -302,13 +302,13 @@ export const listCustomers = async (token) => {
 // Delete a customer
 export const deleteCustomer = async (token, customerId) => {
   try {
-    const response = await fetch(`${BASE_URL}/customers/delete/${customerId}`, {
+    const response = await fetch(`${BASE_URL}/customers/${customerId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (!response.ok) {
+    if (response.status === 200 || response.status === 401) {
       throw new Error("Delete customer failed");
     }
     const data = await response.json();
@@ -319,7 +319,7 @@ export const deleteCustomer = async (token, customerId) => {
 };
 
 // Create a new supplier
-export const createSupplier = async (supplierData, token) => {
+export const createSupplier = async (token, supplierData) => {
   try {
     const response = await fetch(`${BASE_URL}/suppliers/create`, {
       method: "POST",
@@ -361,7 +361,7 @@ export const getSupplier = async (token, supplierId) => {
 // Update an existing supplier
 export const updateSupplier = async (token, supplierId, updateData) => {
   try {
-    const response = await fetch(`${BASE_URL}/suppliers/update/${supplierId}`, {
+    const response = await fetch(`${BASE_URL}/suppliers/${supplierId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -401,17 +401,19 @@ export const listSuppliers = async (token) => {
 // Delete a supplier
 export const deleteSupplier = async (token, supplierId) => {
   try {
-    const response = await fetch(`${BASE_URL}/suppliers/delete/${supplierId}`, {
+    const response = await fetch(`${BASE_URL}/suppliers/${supplierId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (!response.ok) {
+
+    if (response.status === 200 || response.status === 401) {
+      const data = await response.json();
+      return data;
+    } else {
       throw new Error("Delete supplier failed");
     }
-    const data = await response.json();
-    return data;
   } catch (error) {
     throw error;
   }
