@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input, Button, Space, notification } from "antd";
 import { listInvoices, deleteInvoice } from "../api/api";
-import InvoiceModal from "../modals/InvoiceModal";
+import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 
 const Welcome = () => {
