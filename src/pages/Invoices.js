@@ -5,7 +5,7 @@ import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import { jwtDecode } from "jwt-decode";
 
-const Welcome = () => {
+const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
@@ -198,4 +198,4 @@ const Welcome = () => {
   );
 };
 
-export default Welcome;
+export default Invoices;
