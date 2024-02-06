@@ -78,11 +78,30 @@ const Invoices = () => {
     }
   };
 
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    documentTitle: `Invoice-${viewingInvoice?.invoice_number}`,
-    onAfterPrint: () => setViewModalVisible(false),
-  });
+  const handlePrint = () => {
+    const printWindow = window.open("", "", "");
+    printWindow.document.open();
+    printWindow.document.write(`
+      <html>
+      <head>
+        <style>
+          @media print {
+            body {
+              font-size: 12px;
+              line-height: 1.2;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${invoiceHtml}
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.close();
+  };
 
   const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
     const response = await fetch("/template/invoice.html");
@@ -293,7 +312,7 @@ const Invoices = () => {
         <div
           ref={componentRef}
           dangerouslySetInnerHTML={{ __html: invoiceHtml }}
-          style={{ overflowY: "scroll", maxHeight: "70vh", padding: "0 20px"}}
+          style={{ overflowY: "scroll", maxHeight: "70vh", padding: "0 20px" }}
         />
       </Modal>
     </div>
