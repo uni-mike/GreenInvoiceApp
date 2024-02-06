@@ -50,65 +50,67 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
 
   const handleCreate = async () => {
     try {
-        const values = await form.validateFields();
+      const values = await form.validateFields();
 
-        const subtotal = values.line_items.reduce((total, lineItemId) => {
+      const subtotal = values.line_items.reduce((total, lineItemId) => {
+        const item = lineItems.find(({ id }) => id === lineItemId);
+        return total + (item ? item.price * (item.quantity || 1) : 0);
+      }, 0);
+
+      const taxRate = values.tax_rate / 100;
+      const taxAmount = subtotal * taxRate;
+
+      console.log("taxRate: ", taxRate);
+      console.log("taxAmount: ", taxAmount);
+      console.log("subtotal: ", subtotal);
+
+      const totalAmount = subtotal + taxAmount;
+
+      console.log("totalAmount: ", totalAmount);
+
+      const invoiceData = {
+        invoice_number: values.invoice_number,
+        due_date: values.due_date.format("YYYY-MM-DD"),
+        customer_name: values.customer_name,
+        supplier_name: values.supplier_name,
+        line_items: values.line_items
+          .map((lineItemId) => {
             const item = lineItems.find(({ id }) => id === lineItemId);
-            return total + (item ? item.price * (item.quantity || 1) : 0);
-        }, 0);
+            return item ? { id: item.id, quantity: item.quantity } : null;
+          })
+          .filter((item) => item !== null),
+        currency: values.currency,
+        status: values.status,
+        payment_terms: values.payment_terms,
+        purchase_order_number: values.purchase_order_number,
+        shipping_details: values.shipping_details,
+        bank_details: values.bank_details,
+        regulatory_information: values.regulatory_information,
+        notes: values.notes,
+        total_amount: totalAmount.toFixed(2),
+        tax_amount: taxAmount.toFixed(2),
+      };
 
-        const taxRate = values.tax_rate / 100;
-        const taxAmount = subtotal * taxRate;
+      const response = await createInvoice(invoiceData, token);
 
-        console.log("taxRate: ", taxRate)
-        console.log("taxAmount: ", taxAmount)
-        console.log("subtotal: ", subtotal)
-
-        const totalAmount = subtotal + taxAmount;
-
-        console.log("totalAmount: ", totalAmount)
-
-        const invoiceData = {
-            invoice_number: values.invoice_number,
-            due_date: values.due_date.format("YYYY-MM-DD"),
-            customer_name: values.customer_name,
-            supplier_name: values.supplier_name,
-            line_items: values.line_items.map(lineItemId => {
-                const item = lineItems.find(({ id }) => id === lineItemId);
-                return item ? { id: item.id, quantity: item.quantity } : null;
-            }).filter(item => item !== null),
-            currency: values.currency,
-            status: values.status,
-            payment_terms: values.payment_terms,
-            purchase_order_number: values.purchase_order_number,
-            shipping_details: values.shipping_details,
-            bank_details: values.bank_details,
-            regulatory_information: values.regulatory_information,
-            notes: values.notes,
-            total_amount: totalAmount.toFixed(2),
-            tax_amount: taxAmount.toFixed(2),
-        };
-
-        const response = await createInvoice(invoiceData, token);
-
-        if (response && response.invoice_id) {
-            notification.success({
-                message: "Invoice Created",
-                description: "The invoice has been successfully created.",
-            });
-            form.resetFields();
-            onCancel();
-            onCreate();
-        } else {
-            throw new Error("Unexpected response from the server.");
-        }
-    } catch (error) {
-        notification.error({
-            message: "Failed to Create Invoice",
-            description: error.message || "Please try again later.",
+      if (response && response.invoice_id) {
+        notification.success({
+          message: "Invoice Created",
+          description: "The invoice has been successfully created.",
         });
+        form.resetFields();
+        onCancel();
+        onCreate();
+      } else {
+        throw new Error("Unexpected response from the server.");
+      }
+    } catch (error) {
+      notification.error({
+        message: "Failed to Create Invoice",
+        description: error.message || "Please try again later.",
+      });
     }
-};
+  };
 
   return (
     <Modal

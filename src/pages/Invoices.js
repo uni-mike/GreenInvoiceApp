@@ -89,7 +89,8 @@ const Invoices = () => {
     let html = await response.text();
 
     const replacePlaceholders = (placeholder, value) => {
-      html = html.replace(new RegExp(placeholder, "g"), value);
+      const regex = new RegExp(placeholder, "g");
+      html = html.replace(regex, value);
     };
 
     replacePlaceholders("{{invoice_number}}", invoice.invoice_number);
@@ -101,7 +102,6 @@ const Invoices = () => {
       "{{due_date}}",
       new Date(invoice.due_date).toLocaleDateString()
     );
-
     replacePlaceholders("{{customer_name}}", invoice.customer_name);
     replacePlaceholders("{{customer_address}}", invoice.customer_address);
     replacePlaceholders("{{supplier_name}}", invoice.supplier_name);
@@ -110,24 +110,28 @@ const Invoices = () => {
     const lineItemsHtml = lineItemsDetails
       .map(
         (item) => `
-      <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc">${
-          item.name || "N/A"
-        }</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc">${
-          item.quantity
-        }</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc">USD ${parseFloat(
-          item.price
-        ).toFixed(2)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc">USD ${(
-          item.quantity * parseFloat(item.price)
-        ).toFixed(2)}</td>
-      </tr>
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc">${
+              item.name || "N/A"
+            }</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc;text-align: center;">${
+              item.quantity
+            }</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc;text-align: right;">USD ${parseFloat(
+              item.price
+            ).toFixed(2)}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc;text-align: right;">USD ${(
+              item.quantity * parseFloat(item.price)
+            ).toFixed(2)}</td>
+        </tr>
     `
       )
       .join("");
-    html = html.replace("<!-- Single line item from data -->", lineItemsHtml);
+
+    html = html.replace(
+      /<tr>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">None<\/td>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">1<\/td>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">USD \$0.00<\/td>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">USD \$0.00<\/td>\s*<\/tr>/,
+      lineItemsHtml
+    );
 
     replacePlaceholders(
       "{{subtotal}}",
@@ -141,7 +145,6 @@ const Invoices = () => {
       "{{total}}",
       `USD ${parseFloat(invoice.total_amount).toFixed(2)}`
     );
-
     replacePlaceholders("{{payment_terms}}", invoice.payment_terms);
     replacePlaceholders(
       "{{purchase_order_number}}",
