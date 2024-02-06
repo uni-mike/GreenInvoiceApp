@@ -75,7 +75,6 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
     try {
       const values = await form.validateFields();
 
-      // Calculate subtotal, tax, and total
       const subtotal = values.line_items.reduce((total, lineItemId) => {
         const item = lineItems.find(({ id }) => id === lineItemId);
         return total + (item ? item.price * (item.quantity || 1) : 0);
@@ -216,7 +215,6 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
             <Option value="USD">USD</Option>
             <Option value="EUR">EUR</Option>
             <Option value="GBP">GBP</Option>
-            {/* More currencies can be added here */}
           </Select>
         </Form.Item>
         <Form.Item name="status" label="Status" rules={[{ required: true }]}>
