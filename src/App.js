@@ -37,9 +37,14 @@ function App() {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {isAuthenticated && (
-        <Sider collapsible collapsed={collapsed} onCollapse={toggleSidebar}>
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={toggleSidebar}
+          theme="light"
+        >
           <div className="logo" />
-          <Menu theme="dark" mode="vertical">
+          <Menu theme="light" mode="vertical">
             <Menu.Item key="1" icon={<FileTextOutlined />}>
               <Link to="/invoices">Invoices</Link>
             </Menu.Item>
@@ -53,7 +58,6 @@ function App() {
               <Link to="/settings">Settings</Link>
             </Menu.Item>
             <Menu.Item key="5" icon={<AppstoreAddOutlined />}>
-              {" "}
               <Link to="/invoices/lineitems">Line Items</Link>
             </Menu.Item>
             <Menu.Item key="6" icon={<LogoutOutlined />} onClick={handleLogout}>
@@ -62,22 +66,26 @@ function App() {
           </Menu>
         </Sider>
       )}
-      <Layout className="site-layout">
+      <Layout className="site-layout" style={{ backgroundColor: "#fff" }}>
+        {" "}
+        {/* Set the background color to white */}
         <Header
           className="site-layout-background"
-          style={{ padding: 0 }}
+          style={{ padding: 0, backgroundColor: "#fff" }} // Set the Header background to white
         ></Header>
-        <Content style={{ margin: "16px" }}>
+        <Content style={{ margin: "16px", backgroundColor: "#fff" }}>
+          {" "}
+          {/* Set the Content background to white */}
           <div
             className="site-layout-background"
-            style={{ padding: 24, minHeight: 360 }}
+            style={{ padding: 24, minHeight: 360, backgroundColor: "#fff" }} // Set the Content inner div background to white
           >
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/suppliers" element={<Suppliers />} />
               <Route path="/customers" element={<Customers />} />
-              <Route path="/invoices/lineitems" element={<LineItems />} />{" "}
+              <Route path="/invoices/lineitems" element={<LineItems />} />
               <Route
                 path="*"
                 element={
