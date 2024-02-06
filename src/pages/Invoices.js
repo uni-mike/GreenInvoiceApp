@@ -3,7 +3,7 @@ import { Table, Input, Button, Space, notification, Modal } from "antd";
 import { listInvoices, deleteInvoice } from "../api/api";
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import { useReactToPrint } from "react-to-print";
 
 const Invoices = () => {
@@ -38,6 +38,7 @@ const Invoices = () => {
     try {
       const data = await listInvoices(token);
       setInvoices(data);
+      console.log(data);
     } catch (error) {
       console.error("Failed to fetch invoices:", error);
     }
@@ -85,144 +86,96 @@ const Invoices = () => {
       html = html.replace(new RegExp(placeholder, "g"), value);
     };
 
+    replacePlaceholders("{{invoice_number}}", invoice.invoice_number || "None");
     replacePlaceholders(
-      /{{invoice.invoice_number}}/g,
-      invoice.invoice_number || "None"
-    );
-    replacePlaceholders(
-      /{{invoice.issue_date}}/g,
+      "{{issue_date}}",
       invoice.issue_date
         ? new Date(invoice.issue_date).toLocaleDateString()
         : "None"
     );
     replacePlaceholders(
-      /{{invoice.due_date}}/g,
+      "{{due_date}}",
       invoice.due_date
         ? new Date(invoice.due_date).toLocaleDateString()
         : "None"
     );
     replacePlaceholders(
-      /{{invoice.total_amount}}/g,
+      "{{total_amount}}",
       `${invoice.currency} ${formatCurrency(
         invoice.total_amount || 0,
         invoice.currency
       )}`
     );
     replacePlaceholders(
-      /{{invoice.tax_amount}}/g,
+      "{{tax_amount}}",
       `${invoice.currency} ${formatCurrency(
         invoice.tax_amount || 0,
         invoice.currency
       )}`
     );
+    replacePlaceholders("{{supplier_name}}", invoice.supplier_name || "None");
     replacePlaceholders(
-      /{{invoice.supplier_name}}/g,
-      invoice.supplier_name || "None"
-    );
-    replacePlaceholders(
-      /{{invoice.supplier_address}}/g,
+      "{{supplier_address}}",
       invoice.supplier_address || "None"
     );
+    replacePlaceholders("{{customer_name}}", invoice.customer_name || "None");
     replacePlaceholders(
-      /{{invoice.customer_name}}/g,
-      invoice.customer_name || "None"
-    );
-    replacePlaceholders(
-      /{{invoice.customer_address}}/g,
+      "{{customer_address}}",
       invoice.customer_address || "None"
     );
-    replacePlaceholders(/{{invoice.currency}}/g, invoice.currency || "None");
+    replacePlaceholders("{{currency}}", invoice.currency || "None");
+    replacePlaceholders("{{payment_terms}}", invoice.payment_terms || "None");
     replacePlaceholders(
-      /{{invoice.payment_terms}}/g,
-      invoice.payment_terms || "None"
-    );
-    replacePlaceholders(
-      /{{invoice.purchase_order_number}}/g,
+      "{{purchase_order_number}}",
       invoice.purchase_order_number || "None"
     );
     replacePlaceholders(
-      /{{invoice.shipping_details}}/g,
+      "{{shipping_details}}",
       invoice.shipping_details || "None"
     );
+    replacePlaceholders("{{bank_details}}", invoice.bank_details || "None");
     replacePlaceholders(
-      /{{invoice.bank_details}}/g,
-      invoice.bank_details || "None"
-    );
-    replacePlaceholders(
-      /{{invoice.regulatory_information}}/g,
+      "{{regulatory_information}}",
       invoice.regulatory_information || "None"
     );
-    replacePlaceholders(/{{invoice.notes}}/g, invoice.notes || "None");
+    replacePlaceholders("{{notes}}", invoice.notes || "None");
 
-    const subtotal = parseFloat(invoice.total_amount) || 0;
-    const taxRate = parseFloat(invoice.tax_amount || 0);
-    const taxAmount = (subtotal * (taxRate / 100)).toFixed(2);
-    const total = (parseFloat(subtotal) + parseFloat(taxAmount)).toFixed(2);
+    const lineItemsHtml = invoice.line_items
+      .map(
+        (item) => `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+          item.description || "None"
+        }</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+          item.quantity || "None"
+        }</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+          invoice.currency
+        } ${formatCurrency(item.price || 0, invoice.currency)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+          invoice.currency
+        } ${formatCurrency(
+          (item.quantity || 0) * (item.price || 0),
+          invoice.currency
+        )}</td>
+      </tr>
+    `
+      )
+      .join("");
 
-    replacePlaceholders(
-      /<strong>Subtotal:<\/strong> None/g,
-      `<strong>Subtotal:</strong> ${invoice.currency} ${formatCurrency(
-        subtotal,
-        invoice.currency
-      )}`
-    );
-    replacePlaceholders(
-      /<strong>Tax \(None%\):<\/strong> None/g,
-      `<strong>Tax (${taxRate.toFixed(2)}%):</strong> ${
-        invoice.currency
-      } ${formatCurrency(taxAmount, invoice.currency)}`
-    );
-    replacePlaceholders(
-      /<strong>Total:<\/strong> None/g,
-      `<strong>Total:</strong> ${invoice.currency} ${formatCurrency(
-        total,
-        invoice.currency
-      )}`
-    );
-
-    if (invoice.line_items && invoice.line_items.length > 0) {
-      const lineItemsHtml = invoice.line_items
-        .map(
-          (item) => `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
-            ${item.description || "None"}
-          </td>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
-            ${item.quantity || "None"}
-          </td>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
-            ${invoice.currency} ${formatCurrency(
-            item.price || 0,
-            invoice.currency
-          )}
-          </td>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">
-            ${invoice.currency} ${formatCurrency(
-            (item.quantity || 0) * (item.price || 0),
-            invoice.currency
-          )}
-          </td>
-        </tr>
-      `
-        )
-        .join("");
-      html = html.replace(/<!-- Repeat for each item -->/g, lineItemsHtml);
-    } else {
-      html = html.replace(
-        /<!-- Repeat for each item -->/g,
-        "<tr><td colspan='4' style='text-align: center;'>No items</td></tr>"
-      );
-    }
+    html = html.replace("<!-- Repeat for each item -->", lineItemsHtml);
 
     return html;
   };
 
-  const formatCurrency = (value) => {
-    if (typeof value === "number") {
-      return `$${value.toFixed(2)}`;
-    }
-    return value;
+  const formatCurrency = (value, currency) => {
+    const formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 2,
+    });
+    return formatter.format(value);
   };
 
   const columns = [

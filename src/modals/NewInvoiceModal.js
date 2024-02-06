@@ -60,8 +60,8 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         const taxRate = values.tax_rate / 100;
         const taxAmount = subtotal * taxRate;
 
-        console.log("Rate: ", taxRate)
-        console.log("Amount: ", taxAmount)
+        console.log("taxRate: ", taxRate)
+        console.log("taxAmount: ", taxAmount)
         console.log("subtotal: ", subtotal)
 
         const totalAmount = subtotal + taxAmount;
