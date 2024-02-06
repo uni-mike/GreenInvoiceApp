@@ -39,7 +39,6 @@ const Invoices = () => {
     try {
       const data = await listInvoices(token);
       setInvoices(data);
-      console.log(data);
     } catch (error) {
       console.error("Failed to fetch invoices:", error);
     }
@@ -88,75 +87,76 @@ const Invoices = () => {
     const response = await fetch("/template/invoice.html");
     let html = await response.text();
 
-    const replacePlaceholders = (placeholder, value) => {
-      const regex = new RegExp(placeholder, "g");
-      html = html.replace(regex, value);
+    const replacePlaceholder = (placeholder, value) => {
+      html = html.replace(new RegExp(`{{${placeholder}}}`, "g"), value);
     };
 
-    replacePlaceholders("{{invoice_number}}", invoice.invoice_number);
-    replacePlaceholders(
-      "{{issue_date}}",
+    replacePlaceholder("invoice_number", invoice.invoice_number);
+    replacePlaceholder(
+      "issue_date",
       new Date(invoice.issue_date).toLocaleDateString()
     );
-    replacePlaceholders(
-      "{{due_date}}",
+    replacePlaceholder(
+      "due_date",
       new Date(invoice.due_date).toLocaleDateString()
     );
-    replacePlaceholders("{{customer_name}}", invoice.customer_name);
-    replacePlaceholders("{{customer_address}}", invoice.customer_address);
-    replacePlaceholders("{{supplier_name}}", invoice.supplier_name);
-    replacePlaceholders("{{supplier_address}}", invoice.supplier_address);
+    replacePlaceholder("customer_name", invoice.customer_name);
+    replacePlaceholder("customer_address", invoice.customer_address);
+    replacePlaceholder("supplier_name", invoice.supplier_name);
+    replacePlaceholder("supplier_address", invoice.supplier_address);
+    replacePlaceholder("payment_terms", invoice.payment_terms);
+    replacePlaceholder(
+      "purchase_order_number",
+      invoice.purchase_order_number || "N/A"
+    );
+    replacePlaceholder("shipping_details", invoice.shipping_details || "N/A");
+    replacePlaceholder("bank_details", invoice.bank_details || "N/A");
+    replacePlaceholder(
+      "regulatory_information",
+      invoice.regulatory_information || "N/A"
+    );
+    replacePlaceholder("notes", invoice.notes || "N/A");
 
+    let subtotal = 0;
     const lineItemsHtml = lineItemsDetails
-      .map(
-        (item) => `
+      .map((item) => {
+        let lineTotal = item.quantity * parseFloat(item.price);
+        subtotal += lineTotal;
+        return `
         <tr>
-            <td style="padding: 8px; border-bottom: 1px solid #ccc">${
-              item.name || "N/A"
-            }</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ccc;text-align: center;">${
-              item.quantity
-            }</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ccc;text-align: right;">USD ${parseFloat(
-              item.price
-            ).toFixed(2)}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ccc;text-align: right;">USD ${(
-              item.quantity * parseFloat(item.price)
-            ).toFixed(2)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+            item.name || "N/A"
+          }</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+            item.quantity
+          }</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+            invoice.currency
+          } ${parseFloat(item.price).toFixed(2)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+            invoice.currency
+          } ${lineTotal.toFixed(2)}</td>
         </tr>
-    `
-      )
+      `;
+      })
       .join("");
 
-    html = html.replace(
-      /<tr>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">None<\/td>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">1<\/td>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">USD \$0.00<\/td>\s*<td style="padding: 8px; border-bottom: 1px solid #ccc">USD \$0.00<\/td>\s*<\/tr>/,
-      lineItemsHtml
-    );
+    let tax = parseFloat(invoice.tax_amount);
+    let total = parseFloat(invoice.total_amount);
 
-    replacePlaceholders(
-      "{{subtotal}}",
-      `USD ${parseFloat(invoice.total_amount - invoice.tax_amount).toFixed(2)}`
+    if (!isNaN(tax) && !isNaN(total)) {
+      replacePlaceholder("tax", `USD ${tax.toFixed(2)}`);
+      replacePlaceholder("total", `USD ${total.toFixed(2)}`);
+      replacePlaceholder("subtotal", `USD ${subtotal.toFixed(2)}`);
+    } else {
+      replacePlaceholder("tax", "USD N/A");
+      replacePlaceholder("total", "USD N/A");
+    }
+
+    html = html.replace(
+      /<tbody>[\s\S]*?<\/tbody>/,
+      `<tbody>${lineItemsHtml}</tbody>`
     );
-    replacePlaceholders(
-      "{{tax}}",
-      `USD ${parseFloat(invoice.tax_amount).toFixed(2)}`
-    );
-    replacePlaceholders(
-      "{{total}}",
-      `USD ${parseFloat(invoice.total_amount).toFixed(2)}`
-    );
-    replacePlaceholders("{{payment_terms}}", invoice.payment_terms);
-    replacePlaceholders(
-      "{{purchase_order_number}}",
-      invoice.purchase_order_number
-    );
-    replacePlaceholders("{{shipping_details}}", invoice.shipping_details);
-    replacePlaceholders("{{bank_details}}", invoice.bank_details);
-    replacePlaceholders(
-      "{{regulatory_information}}",
-      invoice.regulatory_information
-    );
-    replacePlaceholders("{{notes}}", invoice.notes);
 
     return html;
   };
