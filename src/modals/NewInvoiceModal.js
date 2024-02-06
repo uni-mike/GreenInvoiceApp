@@ -15,7 +15,6 @@ import {
   listSuppliers,
   listLineItems,
 } from "../api/api";
-import CompoundedSpace from "antd/es/space";
 
 const { Option } = Select;
 
@@ -24,6 +23,8 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
   const [customers, setCustomers] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [lineItems, setLineItems] = useState([]);
+  const [customerAddress, setCustomerAddress] = useState("Unknown Address");
+  const [supplierAddress, setSupplierAddress] = useState("Unknown Address");
 
   useEffect(() => {
     if (visible) {
@@ -48,10 +49,33 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
     }
   }, [visible, token]);
 
+  const handleCustomerNameChange = (value) => {
+    const selectedCustomer = customers.find(
+      (customer) => customer.name === value
+    );
+    if (selectedCustomer) {
+      setCustomerAddress(selectedCustomer.address);
+    } else {
+      setCustomerAddress("Unknown Address");
+    }
+  };
+
+  const handleSupplierNameChange = (value) => {
+    const selectedSupplier = suppliers.find(
+      (supplier) => supplier.name === value
+    );
+    if (selectedSupplier) {
+      setSupplierAddress(selectedSupplier.address);
+    } else {
+      setSupplierAddress("Unknown Address");
+    }
+  };
+
   const handleCreate = async () => {
     try {
       const values = await form.validateFields();
 
+      // Calculate subtotal, tax, and total
       const subtotal = values.line_items.reduce((total, lineItemId) => {
         const item = lineItems.find(({ id }) => id === lineItemId);
         return total + (item ? item.price * (item.quantity || 1) : 0);
@@ -59,20 +83,15 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
 
       const taxRate = values.tax_rate / 100;
       const taxAmount = subtotal * taxRate;
-
-      console.log("taxRate: ", taxRate);
-      console.log("taxAmount: ", taxAmount);
-      console.log("subtotal: ", subtotal);
-
       const totalAmount = subtotal + taxAmount;
-
-      console.log("totalAmount: ", totalAmount);
 
       const invoiceData = {
         invoice_number: values.invoice_number,
         due_date: values.due_date.format("YYYY-MM-DD"),
         customer_name: values.customer_name,
+        customer_address: customerAddress,
         supplier_name: values.supplier_name,
+        supplier_address: supplierAddress,
         line_items: values.line_items
           .map((lineItemId) => {
             const item = lineItems.find(({ id }) => id === lineItemId);
@@ -146,7 +165,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           label="Customer Name"
           rules={[{ required: true }]}
         >
-          <Select showSearch>
+          <Select showSearch onChange={handleCustomerNameChange}>
             {customers.map((customer) => (
               <Option key={customer.id} value={customer.name}>
                 {customer.name}
@@ -159,7 +178,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           label="Supplier Name"
           rules={[{ required: true }]}
         >
-          <Select showSearch>
+          <Select showSearch onChange={handleSupplierNameChange}>
             {suppliers.map((supplier) => (
               <Option key={supplier.id} value={supplier.name}>
                 {supplier.name}
@@ -229,6 +248,12 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         </Form.Item>
         <Form.Item name="notes" label="Notes">
           <Input.TextArea />
+        </Form.Item>
+        <Form.Item label="Bill To:" style={{ marginBottom: 0 }}>
+          <p>{customerAddress}</p>
+        </Form.Item>
+        <Form.Item label="Ship To:" style={{ marginBottom: 0 }}>
+          <p>{supplierAddress}</p>
         </Form.Item>
       </Form>
     </Modal>

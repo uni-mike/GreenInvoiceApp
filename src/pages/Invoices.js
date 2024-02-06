@@ -38,6 +38,7 @@ const Invoices = () => {
   const fetchInvoices = async (token) => {
     try {
       const data = await listInvoices(token);
+      console.log(data);
       setInvoices(data);
     } catch (error) {
       console.error("Failed to fetch invoices:", error);
@@ -204,11 +205,8 @@ const Invoices = () => {
       key: "tax_amount",
       render: (text, record) => (
         <span>
-          {record.tax_rate
-            ? `${record.tax_rate.toFixed(2)}% ${formatCurrency(
-                text || 0,
-                record.currency
-              )}`
+          {record.tax_amount
+            ? `${formatCurrency(text || 0, record.currency)}`
             : `N/A`}
         </span>
       ),
