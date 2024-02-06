@@ -1,11 +1,11 @@
 <div
-  style="
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    max-width: 800px;
-    margin: auto;
-    border: 1px solid #ccc;
-    padding: 20px;
-  "
+style="
+font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+max-width: 800px; /* Width set to 850px */
+margin: auto;
+border: 1px solid #ccc;
+padding: 20px;
+"
 >
   <div
     style="display: flex; justify-content: space-between; align-items: center"
@@ -16,13 +16,16 @@
       <p><strong>Issue Date:</strong> {{issue_date}}</p>
       <p><strong>Due Date:</strong> {{due_date}}</p>
     </div>
-    <div>
+    <div
+      style="position: relative; left: 30px; top: -30px;"
+    >
       <img
         src="https://public-bucket-unipath.s3.us-east-2.amazonaws.com/output-onlinepngtools-2.png"
         alt="Company Logo"
         style="max-width: 200px"
       />
     </div>
+  </div>
   </div>
   <hr style="margin-top: 20px; border-top: 1px solid #ccc" />
   <div style="display: flex; justify-content: space-between; margin-top: 20px">
