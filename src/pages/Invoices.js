@@ -293,7 +293,7 @@ const Invoices = () => {
         <div
           ref={componentRef}
           dangerouslySetInnerHTML={{ __html: invoiceHtml }}
-          style={{ overflowY: "scroll", maxHeight: "70vh" }}
+          style={{ overflowY: "scroll", maxHeight: "70vh", padding: "0 20px"}}
         />
       </Modal>
     </div>

@@ -1,31 +1,28 @@
 <div
 style="
-font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-max-width: 800px; /* Width set to 850px */
-margin: auto;
-border: 1px solid #ccc;
-padding: 20px;
-"
->
-  <div
-    style="display: flex; justify-content: space-between; align-items: center"
-  >
-    <div>
-      <h1 style="color: #333">Invoice</h1>
-      <p><strong>Invoice Number:</strong> {{invoice_number}}</p>
-      <p><strong>Issue Date:</strong> {{issue_date}}</p>
-      <p><strong>Due Date:</strong> {{due_date}}</p>
-    </div>
-    <div
-      style="position: relative; left: 30px; top: -30px;"
-    >
-      <img
-        src="https://public-bucket-unipath.s3.us-east-2.amazonaws.com/output-onlinepngtools-2.png"
-        alt="Company Logo"
-        style="max-width: 200px"
-      />
-    </div>
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  max-width: 900px;
+  margin: auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+  padding-right: 20px;
+">
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+  <div>
+    <h1 style="color: #333">Invoice</h1>
+    <p><strong>Invoice Number:</strong> {{invoice_number}}</p>
+    <p><strong>Issue Date:</strong> {{issue_date}}</p>
+    <p><strong>Due Date:</strong> {{due_date}}</p>
   </div>
+  <div>
+    <img
+      src="https://public-bucket-unipath.s3.us-east-2.amazonaws.com/output-onlinepngtools-2.png"
+      alt="Company Logo"
+      style="max-width: 200px; align-self: flex-start;"
+    />
+  </div>
+</div>
+
   </div>
   <hr style="margin-top: 20px; border-top: 1px solid #ccc" />
   <div style="display: flex; justify-content: space-between; margin-top: 20px">
