@@ -84,7 +84,7 @@ const Invoices = () => {
     onAfterPrint: () => setViewModalVisible(false),
   });
 
-  const loadInvoiceTemplate = async (invoice) => {
+  const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
     const response = await fetch("/template/invoice.html");
     let html = await response.text();
 
@@ -92,85 +92,68 @@ const Invoices = () => {
       html = html.replace(new RegExp(placeholder, "g"), value);
     };
 
-    replacePlaceholders("{{invoice_number}}", invoice.invoice_number || "None");
+    replacePlaceholders("{{invoice_number}}", invoice.invoice_number);
     replacePlaceholders(
       "{{issue_date}}",
-      invoice.issue_date
-        ? new Date(invoice.issue_date).toLocaleDateString()
-        : "None"
+      new Date(invoice.issue_date).toLocaleDateString()
     );
     replacePlaceholders(
       "{{due_date}}",
-      invoice.due_date
-        ? new Date(invoice.due_date).toLocaleDateString()
-        : "None"
+      new Date(invoice.due_date).toLocaleDateString()
     );
-    replacePlaceholders(
-      "{{total_amount}}",
-      `${invoice.currency} ${formatCurrency(
-        invoice.total_amount || 0,
-        invoice.currency
-      )}`
-    );
-    replacePlaceholders(
-      "{{tax_amount}}",
-      `${invoice.currency} ${formatCurrency(
-        invoice.tax_amount || 0,
-        invoice.currency
-      )}`
-    );
-    replacePlaceholders("{{supplier_name}}", invoice.supplier_name || "None");
-    replacePlaceholders(
-      "{{supplier_address}}",
-      invoice.supplier_address || "None"
-    );
-    replacePlaceholders("{{customer_name}}", invoice.customer_name || "None");
-    replacePlaceholders(
-      "{{customer_address}}",
-      invoice.customer_address || "None"
-    );
-    replacePlaceholders("{{currency}}", invoice.currency || "None");
-    replacePlaceholders("{{payment_terms}}", invoice.payment_terms || "None");
-    replacePlaceholders(
-      "{{purchase_order_number}}",
-      invoice.purchase_order_number || "None"
-    );
-    replacePlaceholders(
-      "{{shipping_details}}",
-      invoice.shipping_details || "None"
-    );
-    replacePlaceholders("{{bank_details}}", invoice.bank_details || "None");
-    replacePlaceholders(
-      "{{regulatory_information}}",
-      invoice.regulatory_information || "None"
-    );
-    replacePlaceholders("{{notes}}", invoice.notes || "None");
 
-    const lineItemsHtml = invoice.line_items
+    replacePlaceholders("{{customer_name}}", invoice.customer_name);
+    replacePlaceholders("{{customer_address}}", invoice.customer_address);
+    replacePlaceholders("{{supplier_name}}", invoice.supplier_name);
+    replacePlaceholders("{{supplier_address}}", invoice.supplier_address);
+
+    const lineItemsHtml = lineItemsDetails
       .map(
         (item) => `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-          item.description || "None"
+        <td style="padding: 8px; border-bottom: 1px solid #ccc">${
+          item.name || "N/A"
         }</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-          item.quantity || "None"
+        <td style="padding: 8px; border-bottom: 1px solid #ccc">${
+          item.quantity
         }</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-          invoice.currency
-        } ${formatCurrency(item.price || 0, invoice.currency)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-          invoice.currency
-        } ${formatCurrency(
-          (item.quantity || 0) * (item.price || 0),
-          invoice.currency
-        )}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ccc">USD ${parseFloat(
+          item.price
+        ).toFixed(2)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ccc">USD ${(
+          item.quantity * parseFloat(item.price)
+        ).toFixed(2)}</td>
       </tr>
     `
       )
       .join("");
+    html = html.replace("<!-- Single line item from data -->", lineItemsHtml);
 
-    html = html.replace("<!-- Repeat for each item -->", lineItemsHtml);
+    replacePlaceholders(
+      "{{subtotal}}",
+      `USD ${parseFloat(invoice.total_amount - invoice.tax_amount).toFixed(2)}`
+    );
+    replacePlaceholders(
+      "{{tax}}",
+      `USD ${parseFloat(invoice.tax_amount).toFixed(2)}`
+    );
+    replacePlaceholders(
+      "{{total}}",
+      `USD ${parseFloat(invoice.total_amount).toFixed(2)}`
+    );
+
+    replacePlaceholders("{{payment_terms}}", invoice.payment_terms);
+    replacePlaceholders(
+      "{{purchase_order_number}}",
+      invoice.purchase_order_number
+    );
+    replacePlaceholders("{{shipping_details}}", invoice.shipping_details);
+    replacePlaceholders("{{bank_details}}", invoice.bank_details);
+    replacePlaceholders(
+      "{{regulatory_information}}",
+      invoice.regulatory_information
+    );
+    replacePlaceholders("{{notes}}", invoice.notes);
 
     return html;
   };
