@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Table, Input, Button, Space, notification, Modal } from "antd";
-import { listInvoices, deleteInvoice } from "../api/api";
+import { listInvoices, deleteInvoice, getLineItem } from "../api/api";
+
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useReactToPrint } from "react-to-print";
 
 const Invoices = () => {
@@ -55,7 +56,12 @@ const Invoices = () => {
 
   const handleViewInvoice = async (invoice) => {
     setViewingInvoice(invoice);
-    const html = await loadInvoiceTemplate(invoice);
+    const token = localStorage.getItem("token");
+    const lineItemsDetailsPromises = invoice.line_items.map((lineItem) =>
+      getLineItem(token, lineItem.id)
+    );
+    const lineItemsDetails = await Promise.all(lineItemsDetailsPromises);
+    const html = await loadInvoiceTemplate(invoice, lineItemsDetails);
     setInvoiceHtml(html);
     setViewModalVisible(true);
   };
