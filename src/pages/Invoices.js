@@ -273,8 +273,10 @@ const Invoices = () => {
           onCancel={() => setEditModalVisible(false)}
           invoiceData={selectedInvoice}
           onUpdate={refreshInvoiceList}
+          token={localStorage.getItem("token")}
         />
       )}
+
       <Modal
         title="Invoice Details"
         visible={viewModalVisible}
