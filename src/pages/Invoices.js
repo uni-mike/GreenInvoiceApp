@@ -61,7 +61,6 @@ const Invoices = () => {
   const fetchInvoices = async (token) => {
     try {
       const data = await listInvoices(token);
-      console.log(data);
       setInvoices(data);
     } catch (error) {
       console.error("Failed to fetch invoices:", error);

@@ -536,8 +536,7 @@ export const deleteLineItem = async (token, lineItemId) => {
 // Send email with the invoice details
 export const sendInvoiceEmail = async (token, invoiceId, email) => {
   try {
-    const requestBody = { invoice_id: invoiceId, recipient_email: email }; // Updated key to "recipient_email"
-    console.log("Request Payload:", requestBody);
+    const requestBody = { invoice_id: invoiceId, recipient_email: email };
     const response = await fetch(`${BASE_URL}/invoices/send_invoice_email`, {
       method: "POST",
       headers: {
