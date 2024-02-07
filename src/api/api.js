@@ -148,15 +148,37 @@ export const authenticateUser = async (credentials) => {
       },
       body: JSON.stringify(credentials),
     });
-    if (!response.ok) {
-      throw new Error("Authentication failed");
-    }
+
     const data = await response.json();
-    return data;
+
+    console.log(data.message)
+
+    if (response.ok) {
+      // If the response is successful (200 OK), check if OTP validation is required
+      console.log("RESPONSE: ", response)
+      
+      if (data.message === "OTP is missing") { // Corrected message
+        return {
+          needOtpValidation: true,
+          userData: data,
+        };
+      } else {
+        // Include the token in the response after successful authentication
+        return {
+          needOtpValidation: false,
+          userData: data,
+          token: data.token, // Assuming the token is returned in the data object
+        };
+      }
+    } else {
+      // If the response is not successful, throw an error with the message from the server
+      throw new Error(data.message || "Authentication failed");
+    }
   } catch (error) {
     throw error;
   }
 };
+
 
 // Update user details
 export const updateUser = async (token, userId, updateData) => {
@@ -550,6 +572,32 @@ export const sendInvoiceEmail = async (token, invoiceId, email) => {
     }
     const data = await response.json();
     return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const validateOTP = async (otp) => {
+  try {
+    const response = await fetch(`${BASE_URL}/validate_otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ otp }),
+    });
+
+    if (!response.ok) {
+      throw new Error("OTP validation failed");
+    }
+    
+    const data = await response.json();
+    
+    if (data.message === "OTP is valid") {
+      return { success: true, message: data.message };
+    } else {
+      return { success: false, message: data.message };
+    }
   } catch (error) {
     throw error;
   }

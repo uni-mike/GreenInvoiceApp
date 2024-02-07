@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { jwtDecode } from "jwt-decode"; // Correct import assuming jwt-decode is the package name
+import {jwtDecode} from "jwt-decode";
 
 const AuthContext = createContext();
 
@@ -16,6 +16,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState({ username: null, user_id: null });
+  const [tempUserData, setTempUserData] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [loaded, setLoaded] = useState(false);
 
@@ -25,21 +26,19 @@ export function AuthProvider({ children }) {
       try {
         const decoded = jwtDecode(token);
         if (decoded.user_id) {
-          setUser({ user_id: decoded.user_id, username: decoded.username }); // Assuming username is part of the token
+          setUser({ user_id: decoded.user_id, username: decoded.username });
           setIsAuthenticated(true);
         } else {
-          console.error("Invalid token");
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error("Error decoding token:", error);
         setIsAuthenticated(false);
       }
     } else {
       setIsAuthenticated(false);
     }
     setLoaded(true);
-  }, [token]); // Listen to token changes instead of isAuthenticated to avoid unnecessary effects
+  }, [token]);
 
   const saveToken = (newToken) => {
     localStorage.setItem("token", newToken);
@@ -50,21 +49,29 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
     setUser({ username: null, user_id: null });
-    setToken(null); // Clear the token state
+    setToken(null);
+    setTempUserData(null);
+  };
+
+  const requireOtpValidation = (userData) => {
+    setTempUserData(userData);
   };
 
   const contextValue = useMemo(
     () => ({
       isAuthenticated,
-      setIsAuthenticated,
       user,
-      setUser,
       token,
+      tempUserData,
       saveToken,
-      logout, // Include logout in the context
+      logout,
+      requireOtpValidation,
       loaded,
+      setUser,
+      setIsAuthenticated,
+      setToken,
     }),
-    [isAuthenticated, user, token, loaded]
+    [isAuthenticated, user, token, tempUserData, loaded]
   );
 
   return (

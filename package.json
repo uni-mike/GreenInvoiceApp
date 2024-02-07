@@ -11,12 +11,15 @@
     "cuid": "^3.0.0",
     "jwt-decode": "^4.0.0",
     "moment": "^2.30.1",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-google-login": "^5.2.2",
     "react-router-dom": "^6.22.0",
     "react-scripts": "5.0.1",
-    "react-to-print": "^2.14.15"
+    "react-to-print": "^2.14.15",
+    "speakeasy": "^2.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
