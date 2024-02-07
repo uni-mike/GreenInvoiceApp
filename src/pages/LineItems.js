@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, notification, Modal, Select } from "antd";
+import {
+  Table,
+  Input,
+  Button,
+  Space,
+  notification,
+  Modal,
+  Tooltip,
+  Select,
+} from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   listLineItems,
   deleteLineItem,
@@ -178,12 +188,22 @@ const LineItems = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (text, record) => (
+      render: (_, record) => (
         <Space size="middle">
-          <Button onClick={() => handleEditLineItem(record)}>Edit</Button>
-          <Button danger onClick={() => handleDeleteLineItem(record)}>
-            Delete
-          </Button>
+          <Tooltip title="Edit">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => handleEditLineItem(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteLineItem(record)}
+            />
+          </Tooltip>
         </Space>
       ),
     },

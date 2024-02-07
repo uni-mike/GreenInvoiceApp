@@ -54,11 +54,11 @@ function App() {
             <Menu.Item key="3" icon={<TeamOutlined />}>
               <Link to="/customers">Customers</Link>
             </Menu.Item>
-            <Menu.Item key="4" icon={<SettingOutlined />}>
-              <Link to="/settings">Settings</Link>
-            </Menu.Item>
-            <Menu.Item key="5" icon={<AppstoreAddOutlined />}>
+            <Menu.Item key="4" icon={<AppstoreAddOutlined />}>
               <Link to="/invoices/lineitems">Line Items</Link>
+            </Menu.Item>
+            <Menu.Item key="5" icon={<SettingOutlined />}>
+              <Link to="/settings">Settings</Link>
             </Menu.Item>
             <Menu.Item key="6" icon={<LogoutOutlined />} onClick={handleLogout}>
               Logout
@@ -68,17 +68,15 @@ function App() {
       )}
       <Layout className="site-layout" style={{ backgroundColor: "#fff" }}>
         {" "}
-        {/* Set the background color to white */}
         <Header
           className="site-layout-background"
-          style={{ padding: 0, backgroundColor: "#fff" }} // Set the Header background to white
+          style={{ padding: 0, backgroundColor: "#fff" }}
         ></Header>
         <Content style={{ margin: "16px", backgroundColor: "#fff" }}>
           {" "}
-          {/* Set the Content background to white */}
           <div
             className="site-layout-background"
-            style={{ padding: 24, minHeight: 360, backgroundColor: "#fff" }} // Set the Content inner div background to white
+            style={{ padding: 24, minHeight: 360, backgroundColor: "#fff" }}
           >
             <Routes>
               <Route path="/login" element={<Login />} />

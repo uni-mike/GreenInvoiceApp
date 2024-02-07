@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, notification, Modal } from "antd";
+import { Table, Input, Button, Space, notification, Modal, Tooltip } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   listSuppliers,
   deleteSupplier,
@@ -127,15 +128,24 @@ const Suppliers = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (text, record) => (
+      render: (_, record) => (
         <Space size="middle">
-          <Button onClick={() => handleEditSupplier(record)}>Edit</Button>
-          <Button danger onClick={() => handleDeleteSupplier(record)}>
-            Delete
-          </Button>
+          <Tooltip title="Edit">
+            <Button 
+              type="primary" 
+              icon={<EditOutlined />} 
+              onClick={() => handleEditSupplier(record)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button 
+              danger 
+              icon={<DeleteOutlined />} 
+              onClick={() => handleDeleteSupplier(record)} />
+          </Tooltip>
         </Space>
       ),
-    },
+    }
+    
   ];
 
   return (
