@@ -7,7 +7,7 @@ import Suppliers from "./pages/Suppliers";
 import Customers from "./pages/Customers";
 import LineItems from "./pages/LineItems";
 
-import { useAuth } from "./pages/AuthContext";
+import { useAuth } from "./pages/AuthContext"; // Adjust according to your file structure
 import { Layout, Menu } from "antd";
 import {
   FileTextOutlined,
@@ -21,7 +21,7 @@ import {
 const { Header, Sider, Content } = Layout;
 
 function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
 
@@ -30,7 +30,8 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
+    setCollapsed(false);
     navigate("/login");
   };
 

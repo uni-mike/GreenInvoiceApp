@@ -5,7 +5,8 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Correct import assuming jwt-decode is the package name
+
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -24,8 +25,7 @@ export function AuthProvider({ children }) {
       try {
         const decoded = jwtDecode(token);
         if (decoded.user_id) {
-          setUser({ user_id: decoded.user_id });
-
+          setUser({ user_id: decoded.user_id, username: decoded.username }); // Assuming username is part of the token
           setIsAuthenticated(true);
         } else {
           console.error("Invalid token");
@@ -39,11 +39,18 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
     }
     setLoaded(true);
-  }, [isAuthenticated]);
+  }, [token]); // Listen to token changes instead of isAuthenticated to avoid unnecessary effects
 
   const saveToken = (newToken) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    setUser({ username: null, user_id: null });
+    setToken(null); // Clear the token state
   };
 
   const contextValue = useMemo(
@@ -54,6 +61,7 @@ export function AuthProvider({ children }) {
       setUser,
       token,
       saveToken,
+      logout, // Include logout in the context
       loaded,
     }),
     [isAuthenticated, user, token, loaded]
