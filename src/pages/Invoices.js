@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Table, Input, Button, Space, notification, Modal } from "antd";
-import { listInvoices, deleteInvoice, getLineItem } from "../api/api";
+import {
+  listInvoices,
+  deleteInvoice,
+  getLineItem,
+  sendInvoiceEmail,
+  updateInvoice,
+} from "../api/api";
 
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
@@ -101,6 +107,39 @@ const Invoices = () => {
     printWindow.document.close();
     printWindow.print();
     printWindow.close();
+  };
+
+  const handleSendInvoiceEmail = async () => {
+    try {
+      const email = await prompt(
+        "Please enter the email address to send the invoice to:"
+      );
+      if (email === null) return;
+
+      const response = await sendInvoiceEmail(
+        localStorage.getItem("token"),
+        viewingInvoice.id,
+        email
+      );
+      if (response && response.message === "Invoice email sent successfully") {
+        await updateInvoice(localStorage.getItem("token"), viewingInvoice.id, {
+          status: "Sent",
+        });
+        notification.success({
+          message: "Email Sent",
+          description: "The invoice has been successfully emailed.",
+        });
+      } else {
+        throw new Error(
+          "Failed to send email. Unexpected response from the server."
+        );
+      }
+    } catch (error) {
+      notification.error({
+        message: "Failed to Send Email",
+        description: error.message || "Please try again later.",
+      });
+    }
   };
 
   const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
@@ -306,6 +345,9 @@ const Invoices = () => {
           </Button>,
           <Button key="print" type="primary" onClick={handlePrint}>
             Export to PDF
+          </Button>,
+          <Button key="send" type="primary" onClick={handleSendInvoiceEmail}>
+            Send Invoice
           </Button>,
         ]}
       >

@@ -532,3 +532,26 @@ export const deleteLineItem = async (token, lineItemId) => {
     throw error;
   }
 };
+
+// Send email with the invoice details
+export const sendInvoiceEmail = async (token, invoiceId, email) => {
+  try {
+    const requestBody = { invoice_id: invoiceId, recipient_email: email }; // Updated key to "recipient_email"
+    console.log("Request Payload:", requestBody);
+    const response = await fetch(`${BASE_URL}/invoices/send_invoice_email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to send email");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
