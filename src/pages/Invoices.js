@@ -1,5 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Table, Input, Button, Space, notification, Modal } from "antd";
+import {
+  Table,
+  Input,
+  Button,
+  Space,
+  notification,
+  Modal,
+  Tooltip,
+} from "antd";
+
+import {
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  PrinterOutlined,
+  MailOutlined,
+  CloseOutlined
+} from "@ant-design/icons";
+
 import {
   listInvoices,
   deleteInvoice,
@@ -11,7 +29,6 @@ import {
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import { jwtDecode } from "jwt-decode";
-import { useReactToPrint } from "react-to-print";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -284,15 +301,28 @@ const Invoices = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (text, record) => (
+      render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => handleEditInvoice(record)}>
-            Edit
-          </Button>
-          <Button onClick={() => handleViewInvoice(record)}>View</Button>
-          <Button danger onClick={() => handleDeleteInvoice(record)}>
-            Delete
-          </Button>
+          <Tooltip title="Edit">
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => handleEditInvoice(record)}
+              type="primary"
+            />
+          </Tooltip>
+          <Tooltip title="View">
+            <Button
+              icon={<EyeOutlined />}
+              onClick={() => handleViewInvoice(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteInvoice(record)}
+              danger
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -339,16 +369,31 @@ const Invoices = () => {
         title="Invoice Details"
         visible={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
+        width={650}
         footer={[
-          <Button key="back" onClick={() => setViewModalVisible(false)}>
-            Close
-          </Button>,
-          <Button key="print" type="primary" onClick={handlePrint}>
-            Print
-          </Button>,
-          <Button key="send" type="primary" onClick={handleSendInvoiceEmail}>
-            Email Invoice
-          </Button>,
+          <Tooltip title="Close">
+            <Button
+              key="back"
+              icon={<CloseOutlined />}
+              onClick={() => setViewModalVisible(false)}
+            />
+          </Tooltip>,
+          <Tooltip title="Print">
+            <Button
+              key="print"
+              icon={<PrinterOutlined />}
+              onClick={handlePrint}
+              type="primary"
+            />
+          </Tooltip>,
+          <Tooltip title="Email Invoice">
+            <Button
+              key="send"
+              icon={<MailOutlined />}
+              onClick={handleSendInvoiceEmail}
+              type="primary"
+            />
+          </Tooltip>,
         ]}
       >
         <div
