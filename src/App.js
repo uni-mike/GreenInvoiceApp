@@ -7,7 +7,7 @@ import Suppliers from "./pages/Suppliers";
 import Customers from "./pages/Customers";
 import LineItems from "./pages/LineItems";
 
-import { useAuth } from "./pages/AuthContext"; // Adjust according to your file structure
+import { useAuth } from "./pages/AuthContext";
 import { Layout, Menu } from "antd";
 import {
   FileTextOutlined,

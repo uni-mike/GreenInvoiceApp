@@ -334,7 +334,6 @@ const Invoices = () => {
 
   return (
     <div>
-      <h2>Welcome, {userName}</h2>
       <Input
         placeholder="Search Invoices by Number"
         value={searchText}
