@@ -9,6 +9,7 @@ import {
   Select,
   InputNumber,
 } from "antd";
+import cuid from "cuid";
 import {
   createInvoice,
   listCustomers,
@@ -71,6 +72,15 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
     }
   };
 
+  const generateInvoiceNumber = () => {
+    // Concatenate multiple CUIDs to create a longer key
+    let concatenatedCuids = "";
+    while (concatenatedCuids.length < 16) {
+      concatenatedCuids += cuid();
+    }
+    return concatenatedCuids.slice(0, 16);
+  };
+
   const handleCreate = async () => {
     try {
       const values = await form.validateFields();
@@ -85,7 +95,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
       const totalAmount = subtotal + taxAmount;
 
       const invoiceData = {
-        invoice_number: values.invoice_number,
+        invoice_number: `INV-${generateInvoiceNumber()}`,
         due_date: values.due_date.format("YYYY-MM-DD"),
         customer_name: values.customer_name,
         customer_address: customerAddress,
@@ -148,9 +158,10 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         <Form.Item
           name="invoice_number"
           label="Invoice Number"
+          initialValue={`INV-${generateInvoiceNumber()}`}
           rules={[{ required: true }]}
         >
-          <Input />
+          <Input disabled />
         </Form.Item>
         <Form.Item
           name="due_date"
@@ -246,12 +257,6 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         </Form.Item>
         <Form.Item name="notes" label="Notes">
           <Input.TextArea />
-        </Form.Item>
-        <Form.Item label="Bill To:" style={{ marginBottom: 0 }}>
-          <p>{customerAddress}</p>
-        </Form.Item>
-        <Form.Item label="Ship To:" style={{ marginBottom: 0 }}>
-          <p>{supplierAddress}</p>
         </Form.Item>
       </Form>
     </Modal>
