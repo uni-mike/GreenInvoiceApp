@@ -344,10 +344,10 @@ const Invoices = () => {
             Close
           </Button>,
           <Button key="print" type="primary" onClick={handlePrint}>
-            Export to PDF
+            Print
           </Button>,
           <Button key="send" type="primary" onClick={handleSendInvoiceEmail}>
-            Send Invoice
+            Email Invoice
           </Button>,
         ]}
       >
