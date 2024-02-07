@@ -174,11 +174,13 @@ const LineItems = () => {
       title: "Quantity",
       dataIndex: "quantity",
       key: "quantity",
-    },
+      width: 120,
+    },    
     {
       title: "Price",
       dataIndex: "price",
       key: "price",
+      width: 150,
       render: (text, record) => (
         <span>
           {`${record.currency} ${formatCurrency(text || 0, record.currency)}`}
@@ -188,6 +190,7 @@ const LineItems = () => {
     {
       title: "Actions",
       key: "actions",
+      width: 300,
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="Edit">
