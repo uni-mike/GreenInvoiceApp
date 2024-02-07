@@ -148,7 +148,7 @@ const Suppliers = () => {
       />
       <Button
         type="primary"
-        style={{ marginBottom: 20 }}
+        style={{ marginBottom: 20, marginLeft: 10 }}
         onClick={handleAddSupplier}
       >
         Add Supplier

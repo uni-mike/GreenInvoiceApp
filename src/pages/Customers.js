@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, notification, Modal } from "antd";
+import {
+  Table,
+  Input,
+  Button,
+  Space,
+  notification,
+  Modal,
+  Tooltip,
+} from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+
 import {
   listCustomers,
   deleteCustomer,
@@ -127,12 +137,22 @@ const Customers = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (text, record) => (
+      render: (_, record) => (
         <Space size="middle">
-          <Button onClick={() => handleEditCustomer(record)}>Edit</Button>
-          <Button danger onClick={() => handleDeleteCustomer(record)}>
-            Delete
-          </Button>
+          <Tooltip title="Edit">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => handleEditCustomer(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteCustomer(record)}
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -148,7 +168,7 @@ const Customers = () => {
       />
       <Button
         type="primary"
-        style={{ marginBottom: 20 }}
+        style={{ marginBottom: 20, marginLeft: 10 }}
         onClick={handleAddCustomer}
       >
         Add Customer
