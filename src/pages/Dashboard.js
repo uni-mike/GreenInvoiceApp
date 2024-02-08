@@ -1,32 +1,93 @@
-import React from "react";
-import { Row, Col } from "antd";
+import React, { useState } from "react";
+import { Row, Col, Select } from "antd";
 import ReactECharts from "echarts-for-react";
 
+const { Option } = Select;
+
 const Dashboard = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [incomeData, setIncomeData] = useState({
+    month: [335, 310, 234, 135, 1548],
+    quarter: [1000, 1500, 2000, 2500, 3000],
+    year: [5000, 6000, 7000, 8000, 9000],
+  });
+  const [expenseData, setExpenseData] = useState({
+    month: [800, 1500, 2000, 2500, 3000],
+    quarter: [300, 600, 900, 1200, 1500],
+    year: [1000, 2000, 3000, 4000, 5000],
+  });
+
+  const handlePeriodChange = (value) => {
+    setSelectedPeriod(value);
+    // Update the expense data according to the selected period
+    setExpenseData((prevExpenseData) => ({
+      ...prevExpenseData,
+      month: generateExpenseData(value),
+      quarter: generateExpenseData(value),
+      year: generateExpenseData(value),
+    }));
+  };
+
+  // Function to generate expense data based on the selected period
+  const generateExpenseData = (period) => {
+    switch (period) {
+      case "month":
+        return [800, 1500, 2000, 2500, 3000];
+      case "quarter":
+        return [300, 600, 900, 1200, 1500];
+      case "year":
+        return [1000, 2000, 3000, 4000, 5000];
+      default:
+        return [800, 1500, 2000, 2500, 3000];
+    }
+  };
+
   return (
     <div>
+      <Select
+        defaultValue="month"
+        onChange={handlePeriodChange}
+        style={{ marginBottom: "16px" }}
+      >
+        <Option value="month">Month</Option>
+        <Option value="quarter">Quarter</Option>
+        <Option value="year">Year</Option>
+      </Select>
       <Row gutter={[16, 16]}>
         <Col span={12}>
           <ReactECharts
             option={{
               title: {
-                text: "Income vs Expense",
+                text: `Income Distribution by Customer (${selectedPeriod})`,
               },
               tooltip: {},
-              xAxis: {
-                data: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-              },
-              yAxis: {},
               series: [
                 {
                   name: "Income",
-                  type: "bar",
-                  data: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000],
-                },
-                {
-                  name: "Expense",
-                  type: "bar",
-                  data: [800, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500],
+                  type: "pie",
+                  radius: ["50%", "70%"],
+                  data: [
+                    {
+                      value: incomeData[selectedPeriod][0],
+                      name: "Customer A",
+                    },
+                    {
+                      value: incomeData[selectedPeriod][1],
+                      name: "Customer B",
+                    },
+                    {
+                      value: incomeData[selectedPeriod][2],
+                      name: "Customer C",
+                    },
+                    {
+                      value: incomeData[selectedPeriod][3],
+                      name: "Customer D",
+                    },
+                    {
+                      value: incomeData[selectedPeriod][4],
+                      name: "Customer E",
+                    },
+                  ],
                 },
               ],
             }}
@@ -36,18 +97,24 @@ const Dashboard = () => {
           <ReactECharts
             option={{
               title: {
-                text: "Expense Distribution Trend",
+                text: `Income Trend by Service Type (${selectedPeriod})`,
               },
               tooltip: {},
               xAxis: {
-                data: ["Category A", "Category B", "Category C", "Category D", "Category E"],
+                data: [
+                  "Service A",
+                  "Service B",
+                  "Service C",
+                  "Service D",
+                  "Service E",
+                ],
               },
               yAxis: {},
               series: [
                 {
-                  name: "Expense",
-                  type: "bar",
-                  data: [500, 800, 1200, 1500, 2000],
+                  name: "Income",
+                  type: "line",
+                  data: incomeData[selectedPeriod],
                 },
               ],
             }}
@@ -59,21 +126,36 @@ const Dashboard = () => {
           <ReactECharts
             option={{
               title: {
-                text: "Income Distribution by Customer",
+                text: `Income vs Expense (${selectedPeriod})`,
               },
               tooltip: {},
+              xAxis: {
+                data: [
+                  "Jan",
+                  "Feb",
+                  "Mar",
+                  "Apr",
+                  "May",
+                  "Jun",
+                  "Jul",
+                  "Aug",
+                  "Sep",
+                  "Oct",
+                  "Nov",
+                  "Dec",
+                ],
+              },
+              yAxis: {},
               series: [
                 {
                   name: "Income",
-                  type: "pie",
-                  radius: "50%",
-                  data: [
-                    { value: 335, name: "Customer A" },
-                    { value: 310, name: "Customer B" },
-                    { value: 234, name: "Customer C" },
-                    { value: 135, name: "Customer D" },
-                    { value: 1548, name: "Customer E" },
-                  ],
+                  type: "bar",
+                  data: incomeData[selectedPeriod],
+                },
+                {
+                  name: "Expense",
+                  type: "bar",
+                  data: expenseData[selectedPeriod],
                 },
               ],
             }}
@@ -83,18 +165,24 @@ const Dashboard = () => {
           <ReactECharts
             option={{
               title: {
-                text: "Income Trend by Service Type",
+                text: `Expense Distribution Trend (${selectedPeriod})`,
               },
               tooltip: {},
               xAxis: {
-                data: ["Service A", "Service B", "Service C", "Service D", "Service E"],
+                data: [
+                  "Category A",
+                  "Category B",
+                  "Category C",
+                  "Category D",
+                  "Category E",
+                ],
               },
               yAxis: {},
               series: [
                 {
-                  name: "Income",
-                  type: "line",
-                  data: [1500, 1800, 2000, 2200, 2500],
+                  name: "Expense",
+                  type: "bar",
+                  data: expenseData[selectedPeriod],
                 },
               ],
             }}
