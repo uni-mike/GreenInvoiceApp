@@ -329,7 +329,7 @@ const Dashboard = () => {
         }}
       >
         <Statistic
-          title="Total Income for Current Calendar Year"
+          title="Total Income for Current Year"
           value={totalIncomeToDate}
         />
       </Card>
@@ -395,10 +395,28 @@ const Dashboard = () => {
         <Option value="quarter">Quarter</Option>
         <Option value="year">Year</Option>
       </Select>
+      <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
+  <Col span={24}>
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div style={{ flex: "1", marginRight: "10px" }}>
+        <TotalIncomeToDate />
+      </div>
+      <div style={{ flex: "1", marginRight: "10px" }}>
+        <TotalIncomeEver />
+      </div>
+      <div style={{ flex: "1", marginRight: "10px" }}>
+        <TotalInvoices />
+      </div>
+      <div style={{ flex: "1" }}>
+        <TotalInvoicesPaid />
+      </div>
+    </div>
+  </Col>
+</Row>
+
+
       <Row gutter={[16, 16]}>
         <Col span={12}>
-          <TotalIncomeToDate />
-          <TotalIncomeEver />
           <Card
             title={`Income Distribution by Customer`}
             bordered={false}
@@ -408,8 +426,6 @@ const Dashboard = () => {
           </Card>
         </Col>
         <Col span={12}>
-          <TotalInvoices />
-          <TotalInvoicesPaid />
           <Card
             title={`Total Income Trend (${selectedPeriod})`}
             bordered={false}
