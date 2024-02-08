@@ -29,10 +29,35 @@ const Dashboard = () => {
       { name: "Service E", data: [9000, 10000, 11000, 12000, 13000] },
     ],
   });
+
   const [expenseData, setExpenseData] = useState({
     month: [800, 1500, 2000, 2500, 3000],
     quarter: [300, 600, 900, 1200, 1500],
     year: [1000, 2000, 3000, 4000, 5000],
+  });
+
+  const [incomeCustomers, setIncomeCustomers] = useState({
+    month: [
+      { name: "Customer 1", data: [435, 460, 480, 505, 530] },
+      { name: "Customer 2", data: [220, 200, 210, 205, 215] },
+      { name: "Customer 3", data: [550, 575, 590, 610, 620] },
+      { name: "Customer 4", data: [640, 630, 620, 610, 605] },
+      { name: "Customer 5", data: [320, 340, 360, 375, 390] },
+    ],
+    quarter: [
+      { name: "Customer 1", data: [1300, 1410, 1530, 1650] },
+      { name: "Customer 2", data: [650, 630, 640, 655, 700] },
+      { name: "Customer 3", data: [1670, 1720, 1780, 1850] },
+      { name: "Customer 4", data: [1920, 1890, 1860, 1830] },
+      { name: "Customer 5", data: [980, 1020, 1060, 1100] },
+    ],
+    year: [
+      { name: "Customer 1", data: [5500, 5700, 5900, 6100] },
+      { name: "Customer 2", data: [2600, 2650, 2700, 2750] },
+      { name: "Customer 3", data: [7000, 7150, 7300, 7450] },
+      { name: "Customer 4", data: [7600, 7500, 7400, 7300] },
+      { name: "Customer 5", data: [4400, 4500, 4600, 4700] },
+    ],
   });
 
   const handlePeriodChange = (value) => {
@@ -46,7 +71,6 @@ const Dashboard = () => {
     }));
   };
 
-  // Function to generate expense data based on the selected period
   const generateExpenseData = (period) => {
     switch (period) {
       case "month":
@@ -86,7 +110,7 @@ const Dashboard = () => {
                     name: "Income",
                     type: "pie",
                     radius: ["50%", "70%"],
-                    data: incomeData[selectedPeriod].map((item) => ({
+                    data: incomeCustomers[selectedPeriod].map((item) => ({
                       value: item.data.reduce((acc, curr) => acc + curr, 0),
                       name: item.name,
                     })),
@@ -108,12 +132,19 @@ const Dashboard = () => {
                   trigger: "axis",
                 },
                 legend: {
-                  orient: "vertical",
-                  right: 20,
-                  top: 20,
+                  orient: "horizontal",
+                  x: "center",
+                  y: "bottom",
                   data: incomeData[selectedPeriod].map(
                     (service) => service.name
                   ),
+                },
+                grid: {
+                  top: "10%",
+                  left: "10%",
+                  right: "10%",
+                  bottom: "20%",
+                  containLabel: true,
                 },
                 xAxis: {
                   type: "category",
@@ -203,6 +234,49 @@ const Dashboard = () => {
                     data: expenseData[selectedPeriod],
                   },
                 ],
+              }}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card
+            title={`Income Trend by Customer (${selectedPeriod})`}
+            bordered={false}
+            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+          >
+            <ReactECharts
+              option={{
+                tooltip: {
+                  trigger: "axis",
+                },
+                legend: {
+                  data: incomeCustomers[selectedPeriod].map(
+                    (item) => item.name
+                  ),
+                  orient: "horizontal",
+                  x: "center",
+                  y: "bottom",
+                },
+                grid: {
+                  top: "10%",
+                  left: "10%",
+                  right: "10%",
+                  bottom: "20%",
+                  containLabel: true,
+                },
+                xAxis: {
+                  type: "category",
+                  data: ["Jan", "Feb", "Mar", "Apr", "May"],
+                },
+                yAxis: {
+                  type: "value",
+                },
+                series: incomeCustomers[selectedPeriod].map((item) => ({
+                  name: item.name,
+                  type: "line",
+                  data: item.data,
+                  smooth: true,
+                })),
               }}
             />
           </Card>
