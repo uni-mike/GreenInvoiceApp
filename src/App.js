@@ -74,10 +74,10 @@ function App() {
       )}
       <Layout className="site-layout" style={{ backgroundColor: "#fff" }}>
         {" "}
-        <Header
+        {/* <Header
           className="site-layout-background"
           style={{ padding: 0, backgroundColor: "#fff" }}
-        ></Header>
+        ></Header> */}
         <Content style={{ margin: "16px", backgroundColor: "#fff" }}>
           {" "}
           <div
