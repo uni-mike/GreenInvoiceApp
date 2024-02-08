@@ -13,10 +13,9 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token"); // Assuming token is stored in local storage
+        const token = localStorage.getItem("token");
         const invoicesData = await listInvoices(token);
 
-        // Process invoicesData to extract necessary information for incomeData and incomeCustomers
         const incomeData = {};
         const incomeCustomers = {};
 
@@ -24,7 +23,6 @@ const Dashboard = () => {
           const issueDate = new Date(invoice.issue_date);
           const period = getPeriod(issueDate);
 
-          // Process invoice data to populate incomeData
           invoice.line_items.forEach((item) => {
             const existingService = incomeData[item.name];
             if (existingService) {
@@ -34,7 +32,6 @@ const Dashboard = () => {
               incomeData[item.name] = { [period]: item.price * item.quantity };
             }
 
-            // Process invoice data to populate incomeCustomers
             const existingCustomer = incomeCustomers[invoice.customer_name];
             if (existingCustomer) {
               existingCustomer[period] =
@@ -47,7 +44,6 @@ const Dashboard = () => {
           });
         });
 
-        // Update state with processed data
         setIncomeData(incomeData);
         setIncomeCustomers(incomeCustomers);
       } catch (error) {
@@ -80,12 +76,10 @@ const Dashboard = () => {
       return <div>No data available</div>;
     }
 
-    // Calculate total income
     const totalIncome = Object.values(incomeCustomers)
       .flatMap((customer) => Object.values(customer))
       .reduce((acc, cur) => acc + cur, 0);
 
-    // Sort and filter data
     const sortedCustomers = Object.keys(incomeCustomers).sort(
       (a, b) => getTotalIncome(b) - getTotalIncome(a)
     );
@@ -150,6 +144,7 @@ const Dashboard = () => {
     const seriesData = top5Services.map((service) => ({
       name: service,
       type: "line",
+      smooth: true,
       data: Object.values(incomeData[service]),
     }));
     if (restIncome > 0) {
@@ -162,8 +157,9 @@ const Dashboard = () => {
       seriesData.push({
         name: "Rest",
         type: "line",
+        smooth: true,
         data: restData,
-        areaStyle: {}, // Add this to fill the area under the line
+        areaStyle: {},
       });
     }
 
@@ -204,12 +200,10 @@ const Dashboard = () => {
       return <div>No data available</div>;
     }
 
-    // Calculate total income
     const totalIncome = Object.values(incomeCustomers)
       .flatMap((customer) => Object.values(customer))
       .reduce((acc, cur) => acc + cur, 0);
 
-    // Sort and filter data
     const sortedCustomers = Object.keys(incomeCustomers).sort(
       (a, b) => getTotalIncome(b) - getTotalIncome(a)
     );
@@ -221,6 +215,7 @@ const Dashboard = () => {
     const seriesData = top5Customers.map((customer) => ({
       name: customer,
       type: "line",
+      smooth: true,
       data: Object.values(incomeCustomers[customer]),
     }));
     if (restIncome > 0) {
@@ -233,6 +228,7 @@ const Dashboard = () => {
       seriesData.push({
         name: "Rest",
         type: "line",
+        smooth: true,
         data: restData,
       });
     }
@@ -309,7 +305,6 @@ const Dashboard = () => {
     );
   };
 
-  // Helper function to calculate total income for a specific category (service/customer)
   const getTotalIncome = (category) => {
     return Object.values(
       incomeData[category] || incomeCustomers[category] || {}
