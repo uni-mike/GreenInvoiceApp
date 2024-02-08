@@ -84,6 +84,19 @@ const Dashboard = () => {
     }
   };
 
+  const getXAxisData = (period) => {
+    switch (period) {
+      case "month":
+        return ["Jan", "Feb", "Mar", "Apr", "May"];
+      case "quarter":
+        return ["Q1", "Q2", "Q3", "Q4"];
+      case "year":
+        return ["2021", "2022", "2023", "2024", "2025"];
+      default:
+        return ["Jan", "Feb", "Mar", "Apr", "May"];
+    }
+  };
+
   return (
     <div>
       <Select
@@ -97,36 +110,35 @@ const Dashboard = () => {
       </Select>
       <Row gutter={[16, 16]}>
         <Col span={8}>
-        <Card
-  title={`Income Distribution by Customer (${selectedPeriod})`}
-  bordered={false}
-  style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
->
-  <ReactECharts
-    option={{
-      tooltip: {},
-      series: [
-        {
-          name: "Income",
-          type: "pie",
-          radius: ["50%", "70%"],
-          data: incomeCustomers[selectedPeriod].map(item => ({
-            value: item.data.reduce((acc, curr) => acc + curr, 0),
-            name: item.name,
-          })),
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
-          }
-        },
-      ],
-    }}
-  />
-</Card>
-
+          <Card
+            title={`Income Distribution by Customer (${selectedPeriod})`}
+            bordered={false}
+            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+          >
+            <ReactECharts
+              option={{
+                tooltip: {},
+                series: [
+                  {
+                    name: "Income",
+                    type: "pie",
+                    radius: ["50%", "70%"],
+                    data: incomeCustomers[selectedPeriod].map((item) => ({
+                      value: item.data.reduce((acc, curr) => acc + curr, 0),
+                      name: item.name,
+                    })),
+                    emphasis: {
+                      itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: "rgba(0, 0, 0, 0.5)",
+                      },
+                    },
+                  },
+                ],
+              }}
+            />
+          </Card>
         </Col>
         <Col span={8}>
           <Card
@@ -156,7 +168,7 @@ const Dashboard = () => {
                 },
                 xAxis: {
                   type: "category",
-                  data: ["Jan", "Feb", "Mar", "Apr", "May"],
+                  data: getXAxisData(selectedPeriod),
                 },
                 yAxis: {
                   type: "value",
@@ -180,20 +192,7 @@ const Dashboard = () => {
               option={{
                 tooltip: {},
                 xAxis: {
-                  data: [
-                    "Jan",
-                    "Feb",
-                    "Mar",
-                    "Apr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Aug",
-                    "Sep",
-                    "Oct",
-                    "Nov",
-                    "Dec",
-                  ],
+                  data: getXAxisData(selectedPeriod),
                 },
                 yAxis: {},
                 series: [
@@ -226,13 +225,7 @@ const Dashboard = () => {
               option={{
                 tooltip: {},
                 xAxis: {
-                  data: [
-                    "Category A",
-                    "Category B",
-                    "Category C",
-                    "Category D",
-                    "Category E",
-                  ],
+                  data: getXAxisData(selectedPeriod),
                 },
                 yAxis: {},
                 series: [
@@ -274,7 +267,7 @@ const Dashboard = () => {
                 },
                 xAxis: {
                   type: "category",
-                  data: ["Jan", "Feb", "Mar", "Apr", "May"],
+                  data: getXAxisData(selectedPeriod),
                 },
                 yAxis: {
                   type: "value",
