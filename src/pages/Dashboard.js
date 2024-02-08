@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Row, Col, Select } from "antd";
+import { Row, Col, Select, Card } from "antd";
 import ReactECharts from "echarts-for-react";
 
 const { Option } = Select;
@@ -72,157 +72,152 @@ const Dashboard = () => {
         <Option value="year">Year</Option>
       </Select>
       <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <ReactECharts
-            option={{
-              title: {
-                text: `Income Distribution by Customer (${selectedPeriod})`,
-              },
-              tooltip: {},
-              series: [
-                {
-                  name: "Income",
-                  type: "pie",
-                  radius: ["50%", "70%"],
+        <Col span={8}>
+          <Card
+            title={`Income Distribution by Customer (${selectedPeriod})`}
+            bordered={false}
+            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+          >
+            <ReactECharts
+              option={{
+                title: {
+                  text: `Income Distribution by Customer (${selectedPeriod})`,
+                },
+                tooltip: {},
+                series: [
+                  {
+                    name: "Income",
+                    type: "pie",
+                    radius: ["50%", "70%"],
+                    data: incomeData[selectedPeriod].map((item) => ({
+                      value: item.data.reduce((acc, curr) => acc + curr, 0),
+                      name: item.name,
+                    })),
+                  },
+                ],
+              }}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card
+            title={`Income Trend by Service Type (${selectedPeriod})`}
+            bordered={false}
+            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+          >
+            <ReactECharts
+              option={{
+                title: {
+                  text: `Income Trend by Service Type (${selectedPeriod})`,
+                },
+                tooltip: {
+                  trigger: "axis",
+                },
+                legend: {
+                  orient: "vertical",
+                  right: 20,
+                  top: 20,
+                  data: incomeData[selectedPeriod].map(
+                    (service) => service.name
+                  ),
+                },
+                xAxis: {
+                  type: "category",
+                  data: ["Jan", "Feb", "Mar", "Apr", "May"],
+                },
+                yAxis: {
+                  type: "value",
+                },
+                series: incomeData[selectedPeriod].map((service) => ({
+                  name: service.name,
+                  type: "line",
+                  data: service.data,
+                })),
+              }}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card
+            title={`Income vs Expense (${selectedPeriod})`}
+            bordered={false}
+            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+          >
+            <ReactECharts
+              option={{
+                title: {
+                  text: `Income vs Expense (${selectedPeriod})`,
+                },
+                tooltip: {},
+                xAxis: {
                   data: [
-                    {
-                      value: incomeData[selectedPeriod][0].data.reduce(
-                        (acc, curr) => acc + curr,
-                        0
-                      ),
-                      name: "Customer A",
-                    },
-                    {
-                      value: incomeData[selectedPeriod][1].data.reduce(
-                        (acc, curr) => acc + curr,
-                        0
-                      ),
-                      name: "Customer B",
-                    },
-                    {
-                      value: incomeData[selectedPeriod][2].data.reduce(
-                        (acc, curr) => acc + curr,
-                        0
-                      ),
-                      name: "Customer C",
-                    },
-                    {
-                      value: incomeData[selectedPeriod][3].data.reduce(
-                        (acc, curr) => acc + curr,
-                        0
-                      ),
-                      name: "Customer D",
-                    },
-                    {
-                      value: incomeData[selectedPeriod][4].data.reduce(
-                        (acc, curr) => acc + curr,
-                        0
-                      ),
-                      name: "Customer E",
-                    },
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
                   ],
                 },
-              ],
-            }}
-          />
-        </Col>
-        <Col span={12}>
-          <ReactECharts
-            option={{
-              title: {
-                text: `Income Trend by Service Type (${selectedPeriod})`,
-              },
-              tooltip: {
-                trigger: "axis",
-              },
-              legend: {
-                orient: "vertical",
-                right: 20,
-                top: 20,
-                data: incomeData[selectedPeriod].map((service) => service.name),
-              },
-              xAxis: {
-                type: "category",
-                data: ["Jan", "Feb", "Mar", "Apr", "May"],
-              },
-              yAxis: {
-                type: "value",
-              },
-              series: incomeData[selectedPeriod].map((service) => ({
-                name: service.name,
-                type: "line",
-                data: service.data,
-              })),
-            }}
-          />
+                yAxis: {},
+                series: [
+                  {
+                    name: "Income",
+                    type: "bar",
+                    data: incomeData[selectedPeriod].map((item) =>
+                      item.data.reduce((acc, curr) => acc + curr, 0)
+                    ),
+                  },
+                  {
+                    name: "Expense",
+                    type: "bar",
+                    data: expenseData[selectedPeriod],
+                  },
+                ],
+              }}
+            />
+          </Card>
         </Col>
       </Row>
-      <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <ReactECharts
-            option={{
-              title: {
-                text: `Income vs Expense (${selectedPeriod})`,
-              },
-              tooltip: {},
-              xAxis: {
-                data: [
-                  "Jan",
-                  "Feb",
-                  "Mar",
-                  "Apr",
-                  "May",
-                  "Jun",
-                  "Jul",
-                  "Aug",
-                  "Sep",
-                  "Oct",
-                  "Nov",
-                  "Dec",
+      <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
+        <Col span={8}>
+          <Card
+            title={`Expense Distribution Trend (${selectedPeriod})`}
+            bordered={false}
+            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+          >
+            <ReactECharts
+              option={{
+                title: {
+                  text: `Expense Distribution Trend (${selectedPeriod})`,
+                },
+                tooltip: {},
+                xAxis: {
+                  data: [
+                    "Category A",
+                    "Category B",
+                    "Category C",
+                    "Category D",
+                    "Category E",
+                  ],
+                },
+                yAxis: {},
+                series: [
+                  {
+                    name: "Expense",
+                    type: "bar",
+                    data: expenseData[selectedPeriod],
+                  },
                 ],
-              },
-              yAxis: {},
-              series: [
-                {
-                  name: "Income",
-                  type: "bar",
-                  data: incomeData[selectedPeriod][0].data,
-                },
-                {
-                  name: "Expense",
-                  type: "bar",
-                  data: expenseData[selectedPeriod],
-                },
-              ],
-            }}
-          />
-        </Col>
-        <Col span={12}>
-          <ReactECharts
-            option={{
-              title: {
-                text: `Expense Distribution Trend (${selectedPeriod})`,
-              },
-              tooltip: {},
-              xAxis: {
-                data: [
-                  "Category A",
-                  "Category B",
-                  "Category C",
-                  "Category D",
-                  "Category E",
-                ],
-              },
-              yAxis: {},
-              series: [
-                {
-                  name: "Expense",
-                  type: "bar",
-                  data: expenseData[selectedPeriod],
-                },
-              ],
-            }}
-          />
+              }}
+            />
+          </Card>
         </Col>
       </Row>
     </div>
