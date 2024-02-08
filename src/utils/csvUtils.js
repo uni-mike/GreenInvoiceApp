@@ -16,14 +16,15 @@ export const convertToCSV = (data) => {
 
   data.forEach((invoice) => {
     const {
-      id,
       invoice_number,
       issue_date,
       due_date,
+      currency,
       total_amount,
       tax_amount,
       description,
       paid,
+      customer_name,
       status,
       line_items,
     } = invoice;
@@ -32,14 +33,18 @@ export const convertToCSV = (data) => {
     const formattedDueDate = formatDate(due_date);
     const lineItemsString = formatLineItems(line_items);
 
+    const taxRate = (tax_amount / (total_amount - tax_amount)) * 100;
+
     const row = [
-      id,
       invoice_number,
       `"${formattedIssueDate}"`,
       `"${formattedDueDate}"`,
+      currency || "",
       total_amount,
       tax_amount,
+      taxRate.toFixed(2),
       description || "",
+      customer_name,
       paid,
       status,
       `"${lineItemsString}"`,
@@ -49,7 +54,7 @@ export const convertToCSV = (data) => {
   });
 
   const headerRow =
-    "ID,Invoice Number,Issue Date,Due Date,Total Amount,Tax Amount,Description,Paid,Status,Line Items";
+    "Invoice Number,Issue Date,Due Date,Currency,Total Amount,Tax Amount,Tax Rate,Description,Customer Name, Paid,Status,Line Items";
   csvRows.unshift(headerRow);
 
   return csvRows.join("\n");
