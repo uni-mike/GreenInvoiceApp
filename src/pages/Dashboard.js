@@ -136,6 +136,9 @@ const Dashboard = () => {
                 trigger: "axis",
               },
               legend: {
+                orient: "vertical",
+                right: 20,
+                top: 20,
                 data: incomeData[selectedPeriod].map((service) => service.name),
               },
               xAxis: {
