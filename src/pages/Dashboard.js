@@ -163,6 +163,7 @@ const Dashboard = () => {
         name: "Rest",
         type: "line",
         data: restData,
+        areaStyle: {}, // Add this to fill the area under the line
       });
     }
 
@@ -329,7 +330,7 @@ const Dashboard = () => {
       <Row gutter={[16, 16]}>
         <Col span={12}>
           <Card
-            title={`Income Distribution by Customer (${selectedPeriod})`}
+            title={`Income Distribution by Customer`}
             bordered={false}
             style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
           >
