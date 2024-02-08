@@ -152,7 +152,6 @@ export const authenticateUser = async (credentials) => {
     const data = await response.json();
 
     if (response.ok) {
-      
       if (data.message === "OTP is missing") {
         return {
           needOtpValidation: true,
@@ -172,7 +171,6 @@ export const authenticateUser = async (credentials) => {
     throw error;
   }
 };
-
 
 // Update user details
 export const updateUser = async (token, userId, updateData) => {
@@ -584,14 +582,33 @@ export const validateOTP = async (otp) => {
     if (!response.ok) {
       throw new Error("OTP validation failed");
     }
-    
+
     const data = await response.json();
-    
+
     if (data.message === "OTP is valid") {
       return { success: true, message: data.message };
     } else {
       return { success: false, message: data.message };
     }
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Fetch exported invoice data for the current user
+export const fetchExportedInvoices = async (token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/invoices/export`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch exported invoices");
+    }
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw error;
   }

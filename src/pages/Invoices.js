@@ -24,12 +24,14 @@ import {
   getLineItem,
   sendInvoiceEmail,
   updateInvoice,
+  fetchExportedInvoices,
 } from "../api/api";
 
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import { jwtDecode } from "jwt-decode";
 import { nanoid } from "nanoid";
+import { convertToCSV } from "../utils/csvUtils";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -257,6 +259,27 @@ const Invoices = () => {
     return formatter.format(value);
   };
 
+  const handleExportToCSV = async () => {
+    try {
+      const exportedData = await fetchExportedInvoices(
+        localStorage.getItem("token")
+      );
+      const csvData = convertToCSV(exportedData);
+
+      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.setAttribute("href", URL.createObjectURL(blob));
+      link.setAttribute("download", "invoices.csv");
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Failed to export invoices:", error);
+    }
+  };
+  
+
   const columns = [
     {
       title: "Invoice Number",
@@ -358,6 +381,14 @@ const Invoices = () => {
       >
         Issue New Invoice
       </Button>
+      <Button
+        type="primary"
+        style={{ marginBottom: 20, marginLeft: 10 }}
+        onClick={handleExportToCSV}
+      >
+        Export
+      </Button>
+
       <Table columns={columns} dataSource={filteredInvoices} rowKey="key" />
       <InvoiceModal
         visible={modalVisible}
