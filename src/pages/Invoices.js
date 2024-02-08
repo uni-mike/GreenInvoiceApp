@@ -343,8 +343,6 @@ const Invoices = () => {
     invoice.invoice_number.includes(searchText)
   );
 
-  console.log("filteredInvoices: ", filteredInvoices);
-
   return (
     <div>
       <Input
