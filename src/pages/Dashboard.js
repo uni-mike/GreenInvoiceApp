@@ -1,100 +1,318 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Select, Card } from "antd";
 import ReactECharts from "echarts-for-react";
+import { listInvoices } from "../api/api";
 
 const { Option } = Select;
 
 const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
-  const [incomeData, setIncomeData] = useState({
-    month: [
-      { name: "Service A", data: [335, 310, 234, 135, 1548] },
-      { name: "Service B", data: [400, 300, 500, 800, 1200] },
-      { name: "Service C", data: [200, 500, 700, 900, 1000] },
-      { name: "Service D", data: [800, 600, 300, 500, 1000] },
-      { name: "Service E", data: [1200, 900, 700, 600, 1500] },
-    ],
-    quarter: [
-      { name: "Service A", data: [1000, 1500, 2000, 2500, 3000] },
-      { name: "Service B", data: [1200, 1800, 2500, 3000, 3500] },
-      { name: "Service C", data: [800, 1000, 1200, 1500, 1800] },
-      { name: "Service D", data: [1500, 2000, 2500, 3000, 3500] },
-      { name: "Service E", data: [2000, 2500, 3000, 3500, 4000] },
-    ],
-    year: [
-      { name: "Service A", data: [5000, 6000, 7000, 8000, 9000] },
-      { name: "Service B", data: [6000, 7000, 8000, 9000, 10000] },
-      { name: "Service C", data: [4000, 5000, 6000, 7000, 8000] },
-      { name: "Service D", data: [7000, 8000, 9000, 10000, 11000] },
-      { name: "Service E", data: [9000, 10000, 11000, 12000, 13000] },
-    ],
-  });
+  const [incomeData, setIncomeData] = useState({});
+  const [incomeCustomers, setIncomeCustomers] = useState({});
 
-  const [expenseData, setExpenseData] = useState({
-    month: [800, 1500, 2000, 2500, 3000],
-    quarter: [300, 600, 900, 1200, 1500],
-    year: [1000, 2000, 3000, 4000, 5000],
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Assuming token is stored in local storage
+        const invoicesData = await listInvoices(token);
 
-  const [incomeCustomers, setIncomeCustomers] = useState({
-    month: [
-      { name: "Customer 1", data: [435, 460, 480, 505, 530] },
-      { name: "Customer 2", data: [220, 200, 210, 205, 215] },
-      { name: "Customer 3", data: [550, 575, 590, 610, 620] },
-      { name: "Customer 4", data: [640, 630, 620, 610, 605] },
-      { name: "Customer 5", data: [320, 340, 360, 375, 390] },
-    ],
-    quarter: [
-      { name: "Customer 1", data: [1300, 1410, 1530, 1650] },
-      { name: "Customer 2", data: [650, 630, 640, 655, 700] },
-      { name: "Customer 3", data: [1670, 1720, 1780, 1850] },
-      { name: "Customer 4", data: [1920, 1890, 1860, 1830] },
-      { name: "Customer 5", data: [980, 1020, 1060, 1100] },
-    ],
-    year: [
-      { name: "Customer 1", data: [5500, 5700, 5900, 6100] },
-      { name: "Customer 2", data: [2600, 2650, 2700, 2750] },
-      { name: "Customer 3", data: [7000, 7150, 7300, 7450] },
-      { name: "Customer 4", data: [7600, 7500, 7400, 7300] },
-      { name: "Customer 5", data: [4400, 4500, 4600, 4700] },
-    ],
-  });
+        // Process invoicesData to extract necessary information for incomeData and incomeCustomers
+        const incomeData = {};
+        const incomeCustomers = {};
+
+        invoicesData.forEach((invoice) => {
+          const issueDate = new Date(invoice.issue_date);
+          const period = getPeriod(issueDate);
+
+          // Process invoice data to populate incomeData
+          invoice.line_items.forEach((item) => {
+            const existingService = incomeData[item.name];
+            if (existingService) {
+              existingService[period] =
+                (existingService[period] || 0) + item.price * item.quantity;
+            } else {
+              incomeData[item.name] = { [period]: item.price * item.quantity };
+            }
+
+            // Process invoice data to populate incomeCustomers
+            const existingCustomer = incomeCustomers[invoice.customer_name];
+            if (existingCustomer) {
+              existingCustomer[period] =
+                (existingCustomer[period] || 0) + item.price * item.quantity;
+            } else {
+              incomeCustomers[invoice.customer_name] = {
+                [period]: item.price * item.quantity,
+              };
+            }
+          });
+        });
+
+        // Update state with processed data
+        setIncomeData(incomeData);
+        setIncomeCustomers(incomeCustomers);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [selectedPeriod]);
 
   const handlePeriodChange = (value) => {
     setSelectedPeriod(value);
-    // Update the expense data according to the selected period
-    setExpenseData((prevExpenseData) => ({
-      ...prevExpenseData,
-      month: generateExpenseData(value),
-      quarter: generateExpenseData(value),
-      year: generateExpenseData(value),
+  };
+
+  const getPeriod = (date) => {
+    switch (selectedPeriod) {
+      case "month":
+        return `${date.getMonth() + 1}/${date.getFullYear()}`;
+      case "quarter":
+        return `Q${Math.floor(date.getMonth() / 3) + 1}/${date.getFullYear()}`;
+      case "year":
+        return date.getFullYear().toString();
+      default:
+        return "";
+    }
+  };
+
+  const renderIncomeDistributionChart = () => {
+    if (!incomeCustomers || Object.keys(incomeCustomers).length === 0) {
+      return <div>No data available</div>;
+    }
+
+    // Calculate total income
+    const totalIncome = Object.values(incomeCustomers)
+      .flatMap((customer) => Object.values(customer))
+      .reduce((acc, cur) => acc + cur, 0);
+
+    // Sort and filter data
+    const sortedCustomers = Object.keys(incomeCustomers).sort(
+      (a, b) => getTotalIncome(b) - getTotalIncome(a)
+    );
+    const top5Customers = sortedCustomers.slice(0, 5);
+    const restIncome = sortedCustomers
+      .slice(5)
+      .reduce((acc, customer) => acc + getTotalIncome(customer), 0);
+
+    const chartData = top5Customers.map((customer) => ({
+      value: getTotalIncome(customer),
+      name: customer,
     }));
+    if (restIncome > 0) {
+      chartData.push({ value: restIncome, name: "Rest" });
+    }
+
+    return (
+      <ReactECharts
+        option={{
+          tooltip: {
+            formatter: "{a} <br/>{b} : {c} ({d}%)",
+          },
+          series: [
+            {
+              name: "Income",
+              type: "pie",
+              radius: ["50%", "70%"],
+              data: chartData,
+              emphasis: {
+                itemStyle: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: "rgba(0, 0, 0, 0.5)",
+                },
+              },
+            },
+          ],
+        }}
+      />
+    );
   };
 
-  const generateExpenseData = (period) => {
-    switch (period) {
-      case "month":
-        return [800, 1500, 2000, 2500, 3000];
-      case "quarter":
-        return [300, 600, 900, 1200, 1500];
-      case "year":
-        return [1000, 2000, 3000, 4000, 5000];
-      default:
-        return [800, 1500, 2000, 2500, 3000];
+  const renderIncomeTrendByServiceTypeChart = () => {
+    if (!incomeData || Object.keys(incomeData).length === 0) {
+      return <div>No data available</div>;
     }
+
+    // Calculate total income
+    const totalIncome = Object.values(incomeData)
+      .flatMap((service) => Object.values(service))
+      .reduce((acc, cur) => acc + cur, 0);
+
+    // Sort and filter data
+    const sortedServices = Object.keys(incomeData).sort(
+      (a, b) => getTotalIncome(b) - getTotalIncome(a)
+    );
+    const top5Services = sortedServices.slice(0, 5);
+    const restIncome = sortedServices
+      .slice(5)
+      .reduce((acc, service) => acc + getTotalIncome(service), 0);
+
+    const seriesData = top5Services.map((service) => ({
+      name: service,
+      type: "line",
+      data: Object.values(incomeData[service]),
+    }));
+    if (restIncome > 0) {
+      const restData = sortedServices.slice(5).reduce((acc, service) => {
+        Object.keys(incomeData[service]).forEach((period, index) => {
+          acc[index] = (acc[index] || 0) + incomeData[service][period];
+        });
+        return acc;
+      }, []);
+      seriesData.push({
+        name: "Rest",
+        type: "line",
+        data: restData,
+      });
+    }
+
+    return (
+      <ReactECharts
+        option={{
+          tooltip: {
+            trigger: "axis",
+          },
+          legend: {
+            orient: "horizontal",
+            x: "center",
+            y: "bottom",
+            data: top5Services.concat(restIncome > 0 ? ["Rest"] : []),
+          },
+          grid: {
+            top: "10%",
+            left: "10%",
+            right: "10%",
+            bottom: "20%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: Object.keys(incomeData[sortedServices[0]]),
+          },
+          yAxis: {
+            type: "value",
+          },
+          series: seriesData,
+        }}
+      />
+    );
   };
 
-  const getXAxisData = (period) => {
-    switch (period) {
-      case "month":
-        return ["Jan", "Feb", "Mar", "Apr", "May"];
-      case "quarter":
-        return ["Q1", "Q2", "Q3", "Q4"];
-      case "year":
-        return ["2021", "2022", "2023", "2024", "2025"];
-      default:
-        return ["Jan", "Feb", "Mar", "Apr", "May"];
+  const renderIncomeTrendByCustomerChart = () => {
+    if (!incomeCustomers || Object.keys(incomeCustomers).length === 0) {
+      return <div>No data available</div>;
     }
+
+    // Calculate total income
+    const totalIncome = Object.values(incomeCustomers)
+      .flatMap((customer) => Object.values(customer))
+      .reduce((acc, cur) => acc + cur, 0);
+
+    // Sort and filter data
+    const sortedCustomers = Object.keys(incomeCustomers).sort(
+      (a, b) => getTotalIncome(b) - getTotalIncome(a)
+    );
+    const top5Customers = sortedCustomers.slice(0, 5);
+    const restIncome = sortedCustomers
+      .slice(5)
+      .reduce((acc, customer) => acc + getTotalIncome(customer), 0);
+
+    const seriesData = top5Customers.map((customer) => ({
+      name: customer,
+      type: "line",
+      data: Object.values(incomeCustomers[customer]),
+    }));
+    if (restIncome > 0) {
+      const restData = sortedCustomers.slice(5).reduce((acc, customer) => {
+        Object.keys(incomeCustomers[customer]).forEach((period, index) => {
+          acc[index] = (acc[index] || 0) + incomeCustomers[customer][period];
+        });
+        return acc;
+      }, []);
+      seriesData.push({
+        name: "Rest",
+        type: "line",
+        data: restData,
+      });
+    }
+
+    return (
+      <ReactECharts
+        option={{
+          tooltip: {
+            trigger: "axis",
+          },
+          legend: {
+            orient: "horizontal",
+            x: "center",
+            y: "bottom",
+            data: top5Customers.concat(restIncome > 0 ? ["Rest"] : []),
+          },
+          grid: {
+            top: "10%",
+            left: "10%",
+            right: "10%",
+            bottom: "20%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: Object.keys(incomeCustomers[sortedCustomers[0]]),
+          },
+          yAxis: {
+            type: "value",
+          },
+          series: seriesData,
+        }}
+      />
+    );
+  };
+
+  const renderTotalIncomeTrendChart = () => {
+    if (!incomeData || Object.keys(incomeData).length === 0) {
+      return <div>No data available</div>;
+    }
+
+    const totalIncomeTrendData = Object.keys(incomeData).reduce(
+      (acc, service) => {
+        Object.keys(incomeData[service]).forEach((period, index) => {
+          acc[index] = (acc[index] || 0) + incomeData[service][period];
+        });
+        return acc;
+      },
+      []
+    );
+
+    return (
+      <ReactECharts
+        option={{
+          tooltip: {
+            trigger: "axis",
+          },
+          xAxis: {
+            type: "category",
+            data: Object.keys(incomeData[Object.keys(incomeData)[0]]),
+          },
+          yAxis: {
+            type: "value",
+          },
+          series: [
+            {
+              data: totalIncomeTrendData,
+              type: "line",
+              smooth: true,
+            },
+          ],
+        }}
+      />
+    );
+  };
+
+  // Helper function to calculate total income for a specific category (service/customer)
+  const getTotalIncome = (category) => {
+    return Object.values(
+      incomeData[category] || incomeCustomers[category] || {}
+    ).reduce((acc, cur) => acc + cur, 0);
   };
 
   return (
@@ -109,177 +327,40 @@ const Dashboard = () => {
         <Option value="year">Year</Option>
       </Select>
       <Row gutter={[16, 16]}>
-        <Col span={8}>
+        <Col span={12}>
           <Card
             title={`Income Distribution by Customer (${selectedPeriod})`}
             bordered={false}
             style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
           >
-            <ReactECharts
-              option={{
-                tooltip: {},
-                series: [
-                  {
-                    name: "Income",
-                    type: "pie",
-                    radius: ["50%", "70%"],
-                    data: incomeCustomers[selectedPeriod].map((item) => ({
-                      value: item.data.reduce((acc, curr) => acc + curr, 0),
-                      name: item.name,
-                    })),
-                    emphasis: {
-                      itemStyle: {
-                        shadowBlur: 10,
-                        shadowOffsetX: 0,
-                        shadowColor: "rgba(0, 0, 0, 0.5)",
-                      },
-                    },
-                  },
-                ],
-              }}
-            />
+            {renderIncomeDistributionChart()}
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={12}>
+          <Card
+            title={`Total Income Trend (${selectedPeriod})`}
+            bordered={false}
+            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+          >
+            {renderTotalIncomeTrendChart()}
+          </Card>
+        </Col>
+        <Col span={12}>
           <Card
             title={`Income Trend by Service Type (${selectedPeriod})`}
             bordered={false}
             style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
           >
-            <ReactECharts
-              option={{
-                tooltip: {
-                  trigger: "axis",
-                },
-                legend: {
-                  orient: "horizontal",
-                  x: "center",
-                  y: "bottom",
-                  data: incomeData[selectedPeriod].map(
-                    (service) => service.name
-                  ),
-                },
-                grid: {
-                  top: "10%",
-                  left: "10%",
-                  right: "10%",
-                  bottom: "20%",
-                  containLabel: true,
-                },
-                xAxis: {
-                  type: "category",
-                  data: getXAxisData(selectedPeriod),
-                },
-                yAxis: {
-                  type: "value",
-                },
-                series: incomeData[selectedPeriod].map((service) => ({
-                  name: service.name,
-                  type: "line",
-                  data: service.data,
-                })),
-              }}
-            />
+            {renderIncomeTrendByServiceTypeChart()}
           </Card>
         </Col>
-        <Col span={8}>
-          <Card
-            title={`Income vs Expense (${selectedPeriod})`}
-            bordered={false}
-            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
-          >
-            <ReactECharts
-              option={{
-                tooltip: {},
-                xAxis: {
-                  data: getXAxisData(selectedPeriod),
-                },
-                yAxis: {},
-                series: [
-                  {
-                    name: "Income",
-                    type: "bar",
-                    data: incomeData[selectedPeriod].map((item) =>
-                      item.data.reduce((acc, curr) => acc + curr, 0)
-                    ),
-                  },
-                  {
-                    name: "Expense",
-                    type: "bar",
-                    data: expenseData[selectedPeriod],
-                  },
-                ],
-              }}
-            />
-          </Card>
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-        <Col span={8}>
-          <Card
-            title={`Expense Distribution Trend (${selectedPeriod})`}
-            bordered={false}
-            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
-          >
-            <ReactECharts
-              option={{
-                tooltip: {},
-                xAxis: {
-                  data: getXAxisData(selectedPeriod),
-                },
-                yAxis: {},
-                series: [
-                  {
-                    name: "Expense",
-                    type: "bar",
-                    data: expenseData[selectedPeriod],
-                  },
-                ],
-              }}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
+        <Col span={12}>
           <Card
             title={`Income Trend by Customer (${selectedPeriod})`}
             bordered={false}
             style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
           >
-            <ReactECharts
-              option={{
-                tooltip: {
-                  trigger: "axis",
-                },
-                legend: {
-                  data: incomeCustomers[selectedPeriod].map(
-                    (item) => item.name
-                  ),
-                  orient: "horizontal",
-                  x: "center",
-                  y: "bottom",
-                },
-                grid: {
-                  top: "10%",
-                  left: "10%",
-                  right: "10%",
-                  bottom: "20%",
-                  containLabel: true,
-                },
-                xAxis: {
-                  type: "category",
-                  data: getXAxisData(selectedPeriod),
-                },
-                yAxis: {
-                  type: "value",
-                },
-                series: incomeCustomers[selectedPeriod].map((item) => ({
-                  name: item.name,
-                  type: "line",
-                  data: item.data,
-                  smooth: true,
-                })),
-              }}
-            />
+            {renderIncomeTrendByCustomerChart()}
           </Card>
         </Col>
       </Row>
