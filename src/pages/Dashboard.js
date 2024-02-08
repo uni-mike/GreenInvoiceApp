@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Select, Card } from "antd";
+import { Row, Col, Select, Card, Statistic } from "antd";
 import ReactECharts from "echarts-for-react";
 import { listInvoices } from "../api/api";
 
@@ -9,6 +9,8 @@ const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [incomeData, setIncomeData] = useState({});
   const [incomeCustomers, setIncomeCustomers] = useState({});
+  const [totalInvoices, setTotalInvoices] = useState(0);
+  const [totalInvoicesPaid, setTotalInvoicesPaid] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,6 +20,10 @@ const Dashboard = () => {
 
         const incomeData = {};
         const incomeCustomers = {};
+
+        let totalIncomeToDate = 0;
+        let totalInvoices = 0;
+        let totalInvoicesPaid = 0;
 
         invoicesData.forEach((invoice) => {
           const issueDate = new Date(invoice.issue_date);
@@ -42,10 +48,18 @@ const Dashboard = () => {
               };
             }
           });
+
+          totalIncomeToDate += invoice.total_amount;
+          totalInvoices++;
+          if (invoice.status === "Paid") {
+            totalInvoicesPaid++;
+          }
         });
 
         setIncomeData(incomeData);
         setIncomeCustomers(incomeCustomers);
+        setTotalInvoices(totalInvoices);
+        setTotalInvoicesPaid(totalInvoicesPaid);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -127,12 +141,10 @@ const Dashboard = () => {
       return <div>No data available</div>;
     }
 
-    // Calculate total income
     const totalIncome = Object.values(incomeData)
       .flatMap((service) => Object.values(service))
       .reduce((acc, cur) => acc + cur, 0);
 
-    // Sort and filter data
     const sortedServices = Object.keys(incomeData).sort(
       (a, b) => getTotalIncome(b) - getTotalIncome(a)
     );
@@ -144,8 +156,8 @@ const Dashboard = () => {
     const seriesData = top5Services.map((service) => ({
       name: service,
       type: "line",
-      smooth: true,
       data: Object.values(incomeData[service]),
+      smooth: true,
     }));
     if (restIncome > 0) {
       const restData = sortedServices.slice(5).reduce((acc, service) => {
@@ -157,9 +169,9 @@ const Dashboard = () => {
       seriesData.push({
         name: "Rest",
         type: "line",
-        smooth: true,
         data: restData,
         areaStyle: {},
+        smooth: true,
       });
     }
 
@@ -215,8 +227,8 @@ const Dashboard = () => {
     const seriesData = top5Customers.map((customer) => ({
       name: customer,
       type: "line",
-      smooth: true,
       data: Object.values(incomeCustomers[customer]),
+      smooth: true,
     }));
     if (restIncome > 0) {
       const restData = sortedCustomers.slice(5).reduce((acc, customer) => {
@@ -228,8 +240,8 @@ const Dashboard = () => {
       seriesData.push({
         name: "Rest",
         type: "line",
-        smooth: true,
         data: restData,
+        smooth: true,
       });
     }
 
@@ -305,6 +317,67 @@ const Dashboard = () => {
     );
   };
 
+  const TotalIncomeToDate = () => {
+    const totalIncomeToDate = Object.values(incomeCustomers)
+      .flatMap((customer) => Object.values(customer))
+      .reduce((acc, cur) => acc + cur, 0);
+    return (
+      <Card
+        style={{
+          marginBottom: "16px",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Statistic
+          title="Total Income for Current Calendar Year"
+          value={totalIncomeToDate}
+        />
+      </Card>
+    );
+  };
+
+  const TotalIncomeEver = () => {
+    const totalIncomeEver = Object.values(incomeCustomers)
+      .flatMap((customer) => Object.values(customer))
+      .reduce((acc, cur) => acc + cur, 0);
+    return (
+      <Card
+        style={{
+          marginBottom: "16px",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Statistic title="Total Income to Date Ever" value={totalIncomeEver} />
+      </Card>
+    );
+  };
+
+  const TotalInvoices = () => {
+    return (
+      <Card
+        style={{
+          marginBottom: "16px",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Statistic title="Total Invoices Issued" value={totalInvoices} />
+      </Card>
+    );
+  };
+
+  const TotalInvoicesPaid = () => {
+    return (
+      <Card
+        style={{
+          marginBottom: "16px",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Statistic title="Total Invoices Paid" value={totalInvoicesPaid} />
+      </Card>
+    );
+  };
+
   const getTotalIncome = (category) => {
     return Object.values(
       incomeData[category] || incomeCustomers[category] || {}
@@ -324,6 +397,8 @@ const Dashboard = () => {
       </Select>
       <Row gutter={[16, 16]}>
         <Col span={12}>
+          <TotalIncomeToDate />
+          <TotalIncomeEver />
           <Card
             title={`Income Distribution by Customer`}
             bordered={false}
@@ -333,6 +408,8 @@ const Dashboard = () => {
           </Card>
         </Col>
         <Col span={12}>
+          <TotalInvoices />
+          <TotalInvoicesPaid />
           <Card
             title={`Total Income Trend (${selectedPeriod})`}
             bordered={false}
