@@ -16,13 +16,12 @@ const Login = () => {
   const [otpRequired, setOtpRequired] = useState(false);
   const [otp, setOtp] = useState("");
   const [tempUserData, setTempUserData] = useState({});
-  const [credentialResponse, setCredentialResponse] = useState(null); // Define state variable for credentialResponse
+  const [credentialResponse, setCredentialResponse] = useState(null);
 
   const handleGoogleSuccess = async (response) => {
-    // Renamed parameter to response
     setLoading(true);
     setError(null);
-    setCredentialResponse(response); // Store credentialResponse in state
+    setCredentialResponse(response);
 
     try {
       const authData = {
@@ -45,7 +44,7 @@ const Login = () => {
           });
 
           if (otp) {
-            await handleRetryAuthentication(otp, response); // Pass credentialResponse here
+            await handleRetryAuthentication(otp, response);
           }
         } else {
           setError("Failed to log in with Google.");
@@ -61,24 +60,18 @@ const Login = () => {
 
   const handleRetryAuthentication = async (otp, credentialResponse) => {
     try {
-      console.log("Retrying authentication...");
       const response = await api.authenticateUser({
         credential: credentialResponse.credential,
         otp: otp,
       });
 
-      console.log("Retry authentication response:", response);
-
       if (response.token) {
-        console.log("User authenticated successfully after retry.");
         handleAuthenticationSuccess(response);
       } else {
-        // Handle other scenarios such as OTP validation required or other errors
         if (response.needOtpValidation) {
-          console.log("Retry authentication failed. OTP is still required.");
-          setError("OTP is still required."); // Set error message for OTP requirement
+          setError("OTP is still required.");
         } else {
-          setError("Failed to log in with Google after retry."); // Set error message for other errors
+          setError("Failed to log in with Google after retry.");
         }
       }
     } catch (error) {
@@ -129,7 +122,7 @@ const Login = () => {
           />
           <Button
             type="primary"
-            onClick={() => handleRetryAuthentication(otp, credentialResponse)} // Pass credentialResponse here
+            onClick={() => handleRetryAuthentication(otp, credentialResponse)}
             loading={loading}
           >
             Retry Authentication with OTP

@@ -175,7 +175,7 @@ const LineItems = () => {
       dataIndex: "quantity",
       key: "quantity",
       width: 120,
-    },    
+    },
     {
       title: "Price",
       dataIndex: "price",

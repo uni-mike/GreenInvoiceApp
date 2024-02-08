@@ -151,27 +151,21 @@ export const authenticateUser = async (credentials) => {
 
     const data = await response.json();
 
-    console.log(data.message)
-
     if (response.ok) {
-      // If the response is successful (200 OK), check if OTP validation is required
-      console.log("RESPONSE: ", response)
       
-      if (data.message === "OTP is missing") { // Corrected message
+      if (data.message === "OTP is missing") {
         return {
           needOtpValidation: true,
           userData: data,
         };
       } else {
-        // Include the token in the response after successful authentication
         return {
           needOtpValidation: false,
           userData: data,
-          token: data.token, // Assuming the token is returned in the data object
+          token: data.token,
         };
       }
     } else {
-      // If the response is not successful, throw an error with the message from the server
       throw new Error(data.message || "Authentication failed");
     }
   } catch (error) {

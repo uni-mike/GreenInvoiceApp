@@ -73,7 +73,6 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
   };
 
   const generateInvoiceNumber = () => {
-    // Concatenate multiple CUIDs to create a longer key
     let concatenatedCuids = "";
     while (concatenatedCuids.length < 16) {
       concatenatedCuids += cuid();
