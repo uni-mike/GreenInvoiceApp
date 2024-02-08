@@ -80,9 +80,6 @@ const Dashboard = () => {
           >
             <ReactECharts
               option={{
-                title: {
-                  text: `Income Distribution by Customer (${selectedPeriod})`,
-                },
                 tooltip: {},
                 series: [
                   {
@@ -107,9 +104,6 @@ const Dashboard = () => {
           >
             <ReactECharts
               option={{
-                title: {
-                  text: `Income Trend by Service Type (${selectedPeriod})`,
-                },
                 tooltip: {
                   trigger: "axis",
                 },
@@ -145,9 +139,6 @@ const Dashboard = () => {
           >
             <ReactECharts
               option={{
-                title: {
-                  text: `Income vs Expense (${selectedPeriod})`,
-                },
                 tooltip: {},
                 xAxis: {
                   data: [
@@ -194,9 +185,6 @@ const Dashboard = () => {
           >
             <ReactECharts
               option={{
-                title: {
-                  text: `Expense Distribution Trend (${selectedPeriod})`,
-                },
                 tooltip: {},
                 xAxis: {
                   data: [
