@@ -1,71 +1,105 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, notification, Select } from "antd";
-import { updateInvoice, listCustomers, listSuppliers } from "../api/api";
+import {
+  Modal,
+  Form,
+  Input,
+  Button,
+  notification,
+  Select,
+  DatePicker,
+  InputNumber,
+} from "antd";
+import moment from "moment";
+import { updateInvoice, listCustomers, listLineItems } from "../api/api";
 
 const { Option } = Select;
 
-const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
+const EditInvoiceModal = ({
+  visible,
+  onCancel,
+  invoiceData,
+  onUpdate,
+  token,
+}) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
+  const [lineItems, setLineItems] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
+    if (visible) {
+      const fetchData = async () => {
+        try {
+          const [customersRes, lineItemsRes] = await Promise.all([
+            listCustomers(token),
+            listLineItems(token),
+          ]);
+          setCustomers(customersRes);
+          setLineItems(lineItemsRes);
+        } catch (error) {
+          notification.error({
+            message: "Error fetching data",
+            description: error.message,
+          });
+        }
+      };
+      fetchData();
+    }
+  }, [visible, token]);
 
-        const customerData = await listCustomers(token);
-        const supplierData = await listSuppliers(token);
-        setCustomers(customerData);
-        setSuppliers(supplierData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleCustomerSelect = (value, option) => {
-    const selectedCustomer = customers.find(
-      (customer) => customer.name === value
-    );
-    form.setFieldsValue({ customer_address: selectedCustomer.address });
-  };
-
-  const handleSupplierSelect = (value, option) => {
-    const selectedSupplier = suppliers.find(
-      (supplier) => supplier.name === value
-    );
-    form.setFieldsValue({ supplier_address: selectedSupplier.address });
-  };
+  useEffect(() => {
+    if (invoiceData) {
+      form.setFieldsValue({
+        ...invoiceData,
+        due_date: invoiceData.due_date ? moment(invoiceData.due_date) : null,
+        line_items: invoiceData.line_items.map((item) => item.id),
+        tax_rate:
+          (parseFloat(invoiceData.tax_amount) /
+            (parseFloat(invoiceData.total_amount) -
+              parseFloat(invoiceData.tax_amount))) *
+          100,
+      });
+    }
+  }, [form, invoiceData]);
 
   const handleUpdate = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       const values = await form.validateFields();
-      const token = localStorage.getItem("token");
-      const response = await updateInvoice(token, invoiceData.id, values);
+      const updatedValues = {
+        ...values,
+        due_date: values.due_date ? values.due_date.format("YYYY-MM-DD") : "",
+        line_items: values.line_items.map((id) => ({
+          id,
+          quantity:
+            invoiceData.line_items.find((item) => item.id === id)?.quantity ||
+            1,
+        })),
+      };
 
-      if (response.message === "Invoice updated successfully") {
+      const response = await updateInvoice(
+        token,
+        invoiceData.id,
+        updatedValues
+      );
+
+      if (response && response.message === "Invoice updated successfully") {
         notification.success({
           message: "Invoice Updated",
           description: "The invoice has been updated successfully.",
         });
         onUpdate();
-        onCancel();
       } else {
-        notification.error({
-          message: "Invoice Update Failed",
-          description: "Failed to update the invoice. Please try again.",
-        });
+        throw new Error("Failed to update the invoice.");
       }
     } catch (error) {
-      console.error("Error updating invoice:", error);
+      notification.error({
+        message: "Invoice Update Failed",
+        description: error.message || "Please try again.",
+      });
     } finally {
       setLoading(false);
+      onCancel();
     }
   };
 
@@ -88,166 +122,91 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
         </Button>,
       ]}
     >
-      <Form form={form} name="editInvoiceForm" initialValues={invoiceData}>
+      <Form form={form} layout="vertical">
         <Form.Item
           name="invoice_number"
           label="Invoice Number"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the invoice number",
-            },
-          ]}
+          rules={[{ required: true }]}
         >
-          <Input />
+          <Input disabled />
         </Form.Item>
         <Form.Item
           name="due_date"
           label="Due Date"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the due date",
-            },
-          ]}
+          rules={[{ required: true }]}
         >
-          <Input type="date" />
-        </Form.Item>
-        <Form.Item
-          name="total_amount"
-          label="Total Amount"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the total amount",
-            },
-          ]}
-        >
-          <Input type="number" step="0.01" />
-        </Form.Item>
-        <Form.Item
-          name="tax_amount"
-          label="Tax Amount"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the tax amount",
-            },
-          ]}
-        >
-          <Input type="number" step="0.01" />
-        </Form.Item>
-        <Form.Item
-          name="status"
-          label="Status"
-          rules={[
-            {
-              required: true,
-              message: "Please select the status",
-            },
-          ]}
-        >
-          <Select>
-            <Option value="New">New</Option>
-            <Option value="Sent">Sent</Option>
-            <Option value="Lost">Lost</Option>
-            <Option value="Paid">Paid</Option>
-            <Option value="Cancelled">Cancelled</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="notes" label="Notes">
-          <Input.TextArea />
-        </Form.Item>
-        <Form.Item
-          name="description"
-          label="Description"
-          rules={[
-            {
-              required: false,
-              message: "Please enter the description",
-            },
-          ]}
-        >
-          <Input.TextArea />
+          <DatePicker />
         </Form.Item>
         <Form.Item
           name="customer_name"
-          label="Customer Name"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the customer name",
-            },
-          ]}
+          label="Bill to Name"
+          rules={[{ required: true }]}
         >
-          <Select onSelect={handleCustomerSelect}>
-            {customers.map((customer) => (
-              <Option key={customer.id} value={customer.name}>
-                {customer.name}
-              </Option>
-            ))}
-          </Select>
+          <Input defaultValue={invoiceData.customer_name} />
         </Form.Item>
-        <Form.Item
-          name="customer_address"
-          label="Customer Address"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the customer address",
-            },
-          ]}
-        >
-          <Input />
+        <Form.Item name="customer_address" label="Bill to Address">
+          <Input defaultValue={invoiceData.customer_address} />
         </Form.Item>
         <Form.Item
           name="supplier_name"
-          label="Supplier Name"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the supplier name",
-            },
-          ]}
+          label="Ship to Name"
+          rules={[{ required: true }]}
         >
-          <Select onSelect={handleSupplierSelect}>
-            {suppliers.map((supplier) => (
-              <Option key={supplier.id} value={supplier.name}>
-                {supplier.name}
-              </Option>
+          <Input defaultValue={invoiceData.supplier_name} />
+        </Form.Item>
+        <Form.Item name="supplier_address" label="Ship to Address">
+          <Input defaultValue={invoiceData.supplier_address} />
+        </Form.Item>
+        <Form.Item
+          name="line_items"
+          label="Line Items"
+          rules={[{ required: true }]}
+        >
+          <Select
+            mode="multiple"
+            defaultValue={invoiceData.line_items.map((item) => item.id)}
+          >
+            {lineItems.map((item) => (
+              <Option
+                key={item.id}
+                value={item.id}
+              >{`${item.name} - Price: ${item.price}`}</Option>
             ))}
           </Select>
         </Form.Item>
+
         <Form.Item
-          name="supplier_address"
-          label="Supplier Address"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the supplier address",
-            },
-          ]}
+          name="tax_rate"
+          label="Tax Rate (%)"
+          rules={[{ required: true }]}
         >
-          <Input />
+          <InputNumber />
         </Form.Item>
         <Form.Item
           name="currency"
           label="Currency"
-          rules={[
-            {
-              required: true,
-              message: "Please select the currency",
-            },
-          ]}
+          rules={[{ required: true }]}
         >
-          <Select>
+          <Select defaultValue={invoiceData.currency}>
             <Option value="USD">USD</Option>
             <Option value="EUR">EUR</Option>
             <Option value="ILS">ILS</Option>
           </Select>
         </Form.Item>
-        <Form.Item name="payment_terms" label="Payment Terms">
-          <Input.TextArea />
+        <Form.Item name="status" label="Status" rules={[{ required: true }]}>
+          <Select>
+            <Option value="New">New</Option>
+            <Option value="Sent">Sent</Option>
+            <Option value="Paid">Paid</Option>
+            <Option value="Cancelled">Cancelled</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item
+          name="payment_terms"
+          label="Payment Terms"
+          rules={[{ required: true }]}
+        >
+          <Input />
         </Form.Item>
         <Form.Item name="purchase_order_number" label="Purchase Order Number">
           <Input />
@@ -259,6 +218,9 @@ const EditInvoiceModal = ({ visible, onCancel, invoiceData, onUpdate }) => {
           <Input.TextArea />
         </Form.Item>
         <Form.Item name="regulatory_information" label="Regulatory Information">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item name="notes" label="Notes">
           <Input.TextArea />
         </Form.Item>
       </Form>

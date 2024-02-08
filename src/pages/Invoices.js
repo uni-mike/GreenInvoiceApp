@@ -15,7 +15,7 @@ import {
   DeleteOutlined,
   PrinterOutlined,
   MailOutlined,
-  CloseOutlined
+  CloseOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -29,6 +29,7 @@ import {
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import { jwtDecode } from "jwt-decode";
+import { nanoid } from "nanoid";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -61,7 +62,12 @@ const Invoices = () => {
   const fetchInvoices = async (token) => {
     try {
       const data = await listInvoices(token);
-      setInvoices(data);
+      const dataWithUniqueKeys = data.map((record) => ({
+        ...record,
+        key: nanoid(),
+      }));
+
+      setInvoices(dataWithUniqueKeys);
     } catch (error) {
       console.error("Failed to fetch invoices:", error);
     }
@@ -83,7 +89,13 @@ const Invoices = () => {
       getLineItem(token, lineItem.id)
     );
     const lineItemsDetails = await Promise.all(lineItemsDetailsPromises);
-    const html = await loadInvoiceTemplate(invoice, lineItemsDetails);
+
+    const lineItemsWithUniqueIds = lineItemsDetails.map((item) => ({
+      ...item,
+      id: nanoid(),
+    }));
+
+    const html = await loadInvoiceTemplate(invoice, lineItemsWithUniqueIds);
     setInvoiceHtml(html);
     setViewModalVisible(true);
   };
@@ -331,6 +343,8 @@ const Invoices = () => {
     invoice.invoice_number.includes(searchText)
   );
 
+  console.log("filteredInvoices: ", filteredInvoices);
+
   return (
     <div>
       <Input
@@ -346,7 +360,7 @@ const Invoices = () => {
       >
         Issue New Invoice
       </Button>
-      <Table columns={columns} dataSource={filteredInvoices} rowKey="id" />
+      <Table columns={columns} dataSource={filteredInvoices} rowKey="key" />
       <InvoiceModal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
@@ -369,24 +383,21 @@ const Invoices = () => {
         onCancel={() => setViewModalVisible(false)}
         width={650}
         footer={[
-          <Tooltip title="Close">
+          <Tooltip title="Close" key={nanoid()}>
             <Button
-              key="back"
               icon={<CloseOutlined />}
               onClick={() => setViewModalVisible(false)}
             />
           </Tooltip>,
-          <Tooltip title="Print">
+          <Tooltip title="Print" key={nanoid()}>
             <Button
-              key="print"
               icon={<PrinterOutlined />}
               onClick={handlePrint}
               type="primary"
             />
           </Tooltip>,
-          <Tooltip title="Email Invoice">
+          <Tooltip title="Email Invoice" key={nanoid()}>
             <Button
-              key="send"
               icon={<MailOutlined />}
               onClick={handleSendInvoiceEmail}
               type="primary"

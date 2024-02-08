@@ -10,34 +10,24 @@ import {
   InputNumber,
 } from "antd";
 import cuid from "cuid";
-import {
-  createInvoice,
-  listCustomers,
-  listSuppliers,
-  listLineItems,
-} from "../api/api";
+import { createInvoice, listCustomers, listLineItems } from "../api/api";
 
 const { Option } = Select;
 
 const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
   const [form] = Form.useForm();
   const [customers, setCustomers] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
   const [lineItems, setLineItems] = useState([]);
-  const [customerAddress, setCustomerAddress] = useState("Unknown Address");
-  const [supplierAddress, setSupplierAddress] = useState("Unknown Address");
 
   useEffect(() => {
     if (visible) {
       const fetchData = async () => {
         try {
-          const [customersRes, suppliersRes, lineItemsRes] = await Promise.all([
+          const [customersRes, lineItemsRes] = await Promise.all([
             listCustomers(token),
-            listSuppliers(token),
             listLineItems(token),
           ]);
           setCustomers(customersRes);
-          setSuppliers(suppliersRes);
           setLineItems(lineItemsRes);
         } catch (error) {
           notification.error({
@@ -50,26 +40,16 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
     }
   }, [visible, token]);
 
-  const handleCustomerNameChange = (value) => {
+  const handleCustomerNameChange = (value, fieldName) => {
     const selectedCustomer = customers.find(
       (customer) => customer.name === value
     );
-    if (selectedCustomer) {
-      setCustomerAddress(selectedCustomer.address);
-    } else {
-      setCustomerAddress("Unknown Address");
-    }
-  };
-
-  const handleSupplierNameChange = (value) => {
-    const selectedSupplier = suppliers.find(
-      (supplier) => supplier.name === value
-    );
-    if (selectedSupplier) {
-      setSupplierAddress(selectedSupplier.address);
-    } else {
-      setSupplierAddress("Unknown Address");
-    }
+    // Dynamically set the address based on the selected customer for billing or shipping
+    form.setFieldsValue({
+      [fieldName]: selectedCustomer
+        ? selectedCustomer.address
+        : "Unknown Address",
+    });
   };
 
   const generateInvoiceNumber = () => {
@@ -97,9 +77,9 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         invoice_number: `INV-${generateInvoiceNumber()}`,
         due_date: values.due_date.format("YYYY-MM-DD"),
         customer_name: values.customer_name,
-        customer_address: customerAddress,
-        supplier_name: values.supplier_name,
-        supplier_address: supplierAddress,
+        customer_address: form.getFieldValue("bill_to_address"),
+        supplier_name: values.ship_to_name,
+        supplier_address: form.getFieldValue("ship_to_address"),
         line_items: values.line_items
           .map((lineItemId) => {
             const item = lineItems.find(({ id }) => id === lineItemId);
@@ -126,7 +106,6 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           description: "The invoice has been successfully created.",
         });
         form.resetFields();
-        onCancel();
         onCreate();
       } else {
         throw new Error("Unexpected response from the server.");
@@ -137,6 +116,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         description: error.message || "Please try again later.",
       });
     }
+    onCancel();
   };
 
   return (
@@ -171,10 +151,15 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         </Form.Item>
         <Form.Item
           name="customer_name"
-          label="Customer Name"
+          label="Bill to Name"
           rules={[{ required: true }]}
         >
-          <Select showSearch onChange={handleCustomerNameChange}>
+          <Select
+            showSearch
+            onChange={(value) =>
+              handleCustomerNameChange(value, "bill_to_address")
+            }
+          >
             {customers.map((customer) => (
               <Option key={customer.id} value={customer.name}>
                 {customer.name}
@@ -182,18 +167,29 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
             ))}
           </Select>
         </Form.Item>
+        <Form.Item name="bill_to_address" label="Bill to Address">
+          <Input />
+        </Form.Item>
         <Form.Item
-          name="supplier_name"
-          label="Supplier Name"
+          name="ship_to_name"
+          label="Ship to Name"
           rules={[{ required: true }]}
         >
-          <Select showSearch onChange={handleSupplierNameChange}>
-            {suppliers.map((supplier) => (
-              <Option key={supplier.id} value={supplier.name}>
-                {supplier.name}
+          <Select
+            showSearch
+            onChange={(value) =>
+              handleCustomerNameChange(value, "ship_to_address")
+            }
+          >
+            {customers.map((customer) => (
+              <Option key={customer.id} value={customer.name}>
+                {customer.name}
               </Option>
             ))}
           </Select>
+        </Form.Item>
+        <Form.Item name="ship_to_address" label="Ship to Address">
+          <Input />
         </Form.Item>
         <Form.Item
           name="line_items"
@@ -224,7 +220,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           <Select>
             <Option value="USD">USD</Option>
             <Option value="EUR">EUR</Option>
-            <Option value="GBP">GBP</Option>
+            <Option value="ILS">ILS</Option>
           </Select>
         </Form.Item>
         <Form.Item name="status" label="Status" rules={[{ required: true }]}>
