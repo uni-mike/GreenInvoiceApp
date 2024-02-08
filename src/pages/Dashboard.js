@@ -97,28 +97,36 @@ const Dashboard = () => {
       </Select>
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card
-            title={`Income Distribution by Customer (${selectedPeriod})`}
-            bordered={false}
-            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
-          >
-            <ReactECharts
-              option={{
-                tooltip: {},
-                series: [
-                  {
-                    name: "Income",
-                    type: "pie",
-                    radius: ["50%", "70%"],
-                    data: incomeCustomers[selectedPeriod].map((item) => ({
-                      value: item.data.reduce((acc, curr) => acc + curr, 0),
-                      name: item.name,
-                    })),
-                  },
-                ],
-              }}
-            />
-          </Card>
+        <Card
+  title={`Income Distribution by Customer (${selectedPeriod})`}
+  bordered={false}
+  style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+>
+  <ReactECharts
+    option={{
+      tooltip: {},
+      series: [
+        {
+          name: "Income",
+          type: "pie",
+          radius: ["50%", "70%"],
+          data: incomeCustomers[selectedPeriod].map(item => ({
+            value: item.data.reduce((acc, curr) => acc + curr, 0),
+            name: item.name,
+          })),
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          }
+        },
+      ],
+    }}
+  />
+</Card>
+
         </Col>
         <Col span={8}>
           <Card
