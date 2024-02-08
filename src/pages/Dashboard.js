@@ -7,9 +7,27 @@ const { Option } = Select;
 const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [incomeData, setIncomeData] = useState({
-    month: [335, 310, 234, 135, 1548],
-    quarter: [1000, 1500, 2000, 2500, 3000],
-    year: [5000, 6000, 7000, 8000, 9000],
+    month: [
+      { name: "Service A", data: [335, 310, 234, 135, 1548] },
+      { name: "Service B", data: [400, 300, 500, 800, 1200] },
+      { name: "Service C", data: [200, 500, 700, 900, 1000] },
+      { name: "Service D", data: [800, 600, 300, 500, 1000] },
+      { name: "Service E", data: [1200, 900, 700, 600, 1500] },
+    ],
+    quarter: [
+      { name: "Service A", data: [1000, 1500, 2000, 2500, 3000] },
+      { name: "Service B", data: [1200, 1800, 2500, 3000, 3500] },
+      { name: "Service C", data: [800, 1000, 1200, 1500, 1800] },
+      { name: "Service D", data: [1500, 2000, 2500, 3000, 3500] },
+      { name: "Service E", data: [2000, 2500, 3000, 3500, 4000] },
+    ],
+    year: [
+      { name: "Service A", data: [5000, 6000, 7000, 8000, 9000] },
+      { name: "Service B", data: [6000, 7000, 8000, 9000, 10000] },
+      { name: "Service C", data: [4000, 5000, 6000, 7000, 8000] },
+      { name: "Service D", data: [7000, 8000, 9000, 10000, 11000] },
+      { name: "Service E", data: [9000, 10000, 11000, 12000, 13000] },
+    ],
   });
   const [expenseData, setExpenseData] = useState({
     month: [800, 1500, 2000, 2500, 3000],
@@ -68,23 +86,38 @@ const Dashboard = () => {
                   radius: ["50%", "70%"],
                   data: [
                     {
-                      value: incomeData[selectedPeriod][0],
+                      value: incomeData[selectedPeriod][0].data.reduce(
+                        (acc, curr) => acc + curr,
+                        0
+                      ),
                       name: "Customer A",
                     },
                     {
-                      value: incomeData[selectedPeriod][1],
+                      value: incomeData[selectedPeriod][1].data.reduce(
+                        (acc, curr) => acc + curr,
+                        0
+                      ),
                       name: "Customer B",
                     },
                     {
-                      value: incomeData[selectedPeriod][2],
+                      value: incomeData[selectedPeriod][2].data.reduce(
+                        (acc, curr) => acc + curr,
+                        0
+                      ),
                       name: "Customer C",
                     },
                     {
-                      value: incomeData[selectedPeriod][3],
+                      value: incomeData[selectedPeriod][3].data.reduce(
+                        (acc, curr) => acc + curr,
+                        0
+                      ),
                       name: "Customer D",
                     },
                     {
-                      value: incomeData[selectedPeriod][4],
+                      value: incomeData[selectedPeriod][4].data.reduce(
+                        (acc, curr) => acc + curr,
+                        0
+                      ),
                       name: "Customer E",
                     },
                   ],
@@ -99,24 +132,24 @@ const Dashboard = () => {
               title: {
                 text: `Income Trend by Service Type (${selectedPeriod})`,
               },
-              tooltip: {},
-              xAxis: {
-                data: [
-                  "Service A",
-                  "Service B",
-                  "Service C",
-                  "Service D",
-                  "Service E",
-                ],
+              tooltip: {
+                trigger: "axis",
               },
-              yAxis: {},
-              series: [
-                {
-                  name: "Income",
-                  type: "line",
-                  data: incomeData[selectedPeriod],
-                },
-              ],
+              legend: {
+                data: incomeData[selectedPeriod].map((service) => service.name),
+              },
+              xAxis: {
+                type: "category",
+                data: ["Jan", "Feb", "Mar", "Apr", "May"],
+              },
+              yAxis: {
+                type: "value",
+              },
+              series: incomeData[selectedPeriod].map((service) => ({
+                name: service.name,
+                type: "line",
+                data: service.data,
+              })),
             }}
           />
         </Col>
@@ -150,7 +183,7 @@ const Dashboard = () => {
                 {
                   name: "Income",
                   type: "bar",
-                  data: incomeData[selectedPeriod],
+                  data: incomeData[selectedPeriod][0].data,
                 },
                 {
                   name: "Expense",
