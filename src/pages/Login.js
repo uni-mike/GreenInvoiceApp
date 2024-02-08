@@ -91,7 +91,7 @@ const Login = () => {
       user_id: userData.google_id,
     });
     authContext.setIsAuthenticated(true);
-    navigate("/invoices");
+    navigate("/dashboard");
   };
 
   return (

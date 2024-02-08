@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login";
@@ -17,7 +17,7 @@ import {
   SettingOutlined,
   LogoutOutlined,
   AppstoreAddOutlined,
-  DashboardOutlined,
+  DashboardOutlined
 } from "@ant-design/icons";
 
 const { Header, Sider, Content } = Layout;
@@ -26,12 +26,6 @@ function App() {
   const { isAuthenticated, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard");
-    }
-  }, [isAuthenticated, navigate]);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
