@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:3000/prod";
+// const BASE_URL = "http://localhost:3000/prod/";
+const BASE_URL = "https://s6su7nf5mh.execute-api.us-east-2.amazonaws.com/prod/";
 
 // Create a new invoice
 export const createInvoice = async (invoiceData, token) => {

@@ -29,7 +29,7 @@ import {
 
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import { nanoid } from "nanoid";
 import { convertToCSV } from "../utils/csvUtils";
 
@@ -171,9 +171,10 @@ const Invoices = () => {
       });
     }
   };
+  
 
   const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
-    const response = await fetch("/template/invoice.html");
+    const response = await fetch("./template/invoice.html");
     let html = await response.text();
 
     const replacePlaceholder = (placeholder, value) => {
