@@ -286,15 +286,17 @@ const Dashboard = () => {
       return <div>No data available</div>;
     }
 
-    const totalIncomeTrendData = Object.keys(incomeData).reduce(
-      (acc, service) => {
-        Object.keys(incomeData[service]).forEach((period, index) => {
-          acc[index] = (acc[index] || 0) + incomeData[service][period];
-        });
+    const totalIncomeTrendData = Object.keys(
+      incomeData[Object.keys(incomeData)[0]]
+    ).map((period, index) => {
+      return Object.values(incomeData).reduce((acc, service) => {
+        const income = service[period];
+        if (!isNaN(income)) {
+          acc += income;
+        }
         return acc;
-      },
-      []
-    );
+      }, 0);
+    });
 
     return (
       <ReactECharts
