@@ -111,7 +111,7 @@ const Dashboard = () => {
       name: customer,
     }));
     if (restIncome > 0) {
-      chartData.push({ value: restIncome, name: "Rest" });
+      chartData.push({ value: restIncome, name: "Others" });
     }
 
     return (
@@ -167,7 +167,7 @@ const Dashboard = () => {
         return acc;
       }, []);
       seriesData.push({
-        name: "Rest",
+        name: "Others",
         type: "line",
         data: restData,
         smooth: true,
@@ -184,7 +184,7 @@ const Dashboard = () => {
             orient: "horizontal",
             x: "center",
             y: "bottom",
-            data: top5Services.concat(restIncome > 0 ? ["Rest"] : []),
+            data: top5Services.concat(restIncome > 0 ? ["Others"] : []),
           },
           grid: {
             top: "10%",
@@ -235,7 +235,7 @@ const Dashboard = () => {
         return acc;
       }, []);
       seriesData.push({
-        name: "Rest",
+        name: "Others",
         type: "line",
         stack: "total",
         areaStyle: {},
@@ -254,7 +254,7 @@ const Dashboard = () => {
             orient: "horizontal",
             x: "center",
             y: "bottom",
-            data: top5Customers.concat(restIncome > 0 ? ["Rest"] : []),
+            data: top5Customers.concat(restIncome > 0 ? ["Others"] : []),
           },
           grid: {
             top: "10%",
