@@ -11,6 +11,7 @@ import {
 } from "antd";
 import cuid from "cuid";
 import { createInvoice, listCustomers, listLineItems } from "../api/api";
+// import moment from "moment";
 
 const { Option } = Select;
 
@@ -44,7 +45,6 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
     const selectedCustomer = customers.find(
       (customer) => customer.name === value
     );
-    // Dynamically set the address based on the selected customer for billing or shipping
     form.setFieldsValue({
       [fieldName]: selectedCustomer
         ? selectedCustomer.address
@@ -133,7 +133,17 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         </Button>,
       ]}
     >
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          // due_date: moment().add(30, "days"),
+          tax_rate: 0,
+          currency: "USD",
+          status: "New",
+          payment_terms: "net 30",
+        }}
+      >
         <Form.Item
           name="invoice_number"
           label="Invoice Number"
@@ -236,7 +246,15 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           label="Payment Terms"
           rules={[{ required: true }]}
         >
-          <Input />
+          <Select>
+            <Option value="due to receipt">Due to Receipt</Option>
+            <Option value="due end of the next month">
+              Due End of the Next Month
+            </Option>
+            <Option value="net 30">Net 30</Option>
+            <Option value="net 45">Net 45</Option>
+            <Option value="net 60">Net 60</Option>
+          </Select>
         </Form.Item>
         <Form.Item name="purchase_order_number" label="Purchase Order Number">
           <Input />

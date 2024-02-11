@@ -21,7 +21,7 @@ import {
   MenuOutlined,
 } from "@ant-design/icons";
 
-const { Header, Sider, Content } = Layout;
+const { Sider, Content } = Layout;
 
 function App() {
   const { isAuthenticated, logout } = useAuth();
@@ -32,10 +32,10 @@ function App() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsSmallScreen(window.innerWidth <= 768); // Adjust this value according to your breakpoint
+      setIsSmallScreen(window.innerWidth <= 768);
     };
     window.addEventListener("resize", handleResize);
-    handleResize(); // Initial check
+    handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -62,7 +62,7 @@ function App() {
     <Layout style={{ minHeight: "100vh" }}>
       {isAuthenticated && (
         <>
-          {isSmallScreen && ( // Render mobile menu button only on small screens
+          {isSmallScreen && (
             <div className="mobile-menu-button">
               <Button
                 type="text"
@@ -71,14 +71,9 @@ function App() {
               />
             </div>
           )}
-          {/* Mobile menu */}
           {isMobileMenuVisible && isSmallScreen && (
             <div className="mobile-menu">
-              <Menu
-                theme="light"
-                mode="vertical"
-                onClick={handleMenuItemClick} // Close mobile menu on item click
-              >
+              <Menu theme="light" mode="vertical" onClick={handleMenuItemClick}>
                 <Menu.Item key="1" icon={<DashboardOutlined />}>
                   <Link to="/dashboard">Dashboard</Link>
                 </Menu.Item>
@@ -107,7 +102,6 @@ function App() {
               </Menu>
             </div>
           )}
-          {/* Desktop sidebar */}
           {!isSmallScreen && (
             <Sider
               collapsible
