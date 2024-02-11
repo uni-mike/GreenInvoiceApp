@@ -173,7 +173,7 @@ const Invoices = () => {
   };
 
   const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
-    const response = await fetch("/template/invoice.html");
+    const response = await fetch("./template/invoice.html");
     let html = await response.text();
 
     const replacePlaceholder = (placeholder, value) => {
