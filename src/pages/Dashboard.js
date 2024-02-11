@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Select, Card, Statistic } from "antd";
+import { Row, Col, Select, Card, Statistic, Spin } from "antd";
 import ReactECharts from "echarts-for-react";
 import { listInvoices } from "../api/api";
 
@@ -11,10 +11,12 @@ const Dashboard = () => {
   const [incomeCustomers, setIncomeCustomers] = useState({});
   const [totalInvoices, setTotalInvoices] = useState(0);
   const [totalInvoicesPaid, setTotalInvoicesPaid] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("token");
         const invoicesData = await listInvoices(token);
 
@@ -60,8 +62,10 @@ const Dashboard = () => {
         setIncomeCustomers(incomeCustomers);
         setTotalInvoices(totalInvoices);
         setTotalInvoicesPaid(totalInvoicesPaid);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setLoading(false);
       }
     };
 
@@ -394,74 +398,76 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
-      <Select
-        defaultValue="month"
-        onChange={handlePeriodChange}
-        style={{ marginBottom: "16px" }}
-      >
-        <Option value="month">Month</Option>
-        <Option value="quarter">Quarter</Option>
-        <Option value="year">Year</Option>
-      </Select>
-      <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-        <Col span={24}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div style={{ flex: "1", marginRight: "10px" }}>
-              <TotalIncomeToDate />
+    <Spin spinning={loading} tip="Loading...">
+      <div>
+        <Select
+          defaultValue="month"
+          onChange={handlePeriodChange}
+          style={{ marginBottom: "16px" }}
+        >
+          <Option value="month">Month</Option>
+          <Option value="quarter">Quarter</Option>
+          <Option value="year">Year</Option>
+        </Select>
+        <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
+          <Col span={24}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div style={{ flex: "1", marginRight: "10px" }}>
+                <TotalIncomeToDate />
+              </div>
+              <div style={{ flex: "1", marginRight: "10px" }}>
+                <TotalIncomeEver />
+              </div>
+              <div style={{ flex: "1", marginRight: "10px" }}>
+                <TotalInvoices />
+              </div>
+              <div style={{ flex: "1" }}>
+                <TotalInvoicesPaid />
+              </div>
             </div>
-            <div style={{ flex: "1", marginRight: "10px" }}>
-              <TotalIncomeEver />
-            </div>
-            <div style={{ flex: "1", marginRight: "10px" }}>
-              <TotalInvoices />
-            </div>
-            <div style={{ flex: "1" }}>
-              <TotalInvoicesPaid />
-            </div>
-          </div>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
 
-      <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <Card
-            title={`Income Distribution by Customer`}
-            bordered={false}
-            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
-          >
-            {renderIncomeDistributionChart()}
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card
-            title={`Total Income Trend (${selectedPeriod})`}
-            bordered={false}
-            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
-          >
-            {renderTotalIncomeTrendChart()}
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card
-            title={`Income Trend by Service Type (${selectedPeriod})`}
-            bordered={false}
-            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
-          >
-            {renderIncomeTrendByServiceTypeChart()}
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card
-            title={`Income Trend by Customer (${selectedPeriod})`}
-            bordered={false}
-            style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
-          >
-            {renderIncomeTrendByCustomerChart()}
-          </Card>
-        </Col>
-      </Row>
-    </div>
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Card
+              title={`Income Distribution by Customer`}
+              bordered={false}
+              style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+            >
+              {renderIncomeDistributionChart()}
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card
+              title={`Total Income Trend (${selectedPeriod})`}
+              bordered={false}
+              style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+            >
+              {renderTotalIncomeTrendChart()}
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card
+              title={`Income Trend by Service Type (${selectedPeriod})`}
+              bordered={false}
+              style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+            >
+              {renderIncomeTrendByServiceTypeChart()}
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card
+              title={`Income Trend by Customer (${selectedPeriod})`}
+              bordered={false}
+              style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
+            >
+              {renderIncomeTrendByCustomerChart()}
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    </Spin>
   );
 };
 

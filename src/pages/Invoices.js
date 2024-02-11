@@ -7,8 +7,8 @@ import {
   notification,
   Modal,
   Tooltip,
+  Spin,
 } from "antd";
-
 import {
   EditOutlined,
   EyeOutlined,
@@ -17,7 +17,6 @@ import {
   MailOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-
 import {
   listInvoices,
   deleteInvoice,
@@ -26,7 +25,6 @@ import {
   updateInvoice,
   fetchExportedInvoices,
 } from "../api/api";
-
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
 import jwtDecode from "jwt-decode";
@@ -43,6 +41,7 @@ const Invoices = () => {
   const [viewingInvoice, setViewingInvoice] = useState(null);
   const [userName, setUserName] = useState("");
   const [invoiceHtml, setInvoiceHtml] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const componentRef = useRef();
 
@@ -70,6 +69,7 @@ const Invoices = () => {
       }));
 
       setInvoices(dataWithUniqueKeys);
+      setLoading(false);
     } catch (error) {
       console.error("Failed to fetch invoices:", error);
     }
@@ -172,9 +172,10 @@ const Invoices = () => {
     }
   };
 
-
   const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
-    const response = await fetch("https://public-bucket-unipath.s3.us-east-2.amazonaws.com/invoice.html");
+    const response = await fetch(
+      "https://public-bucket-unipath.s3.us-east-2.amazonaws.com/invoice.html"
+    );
     let html = await response.text();
 
     const replacePlaceholder = (placeholder, value) => {
@@ -279,7 +280,6 @@ const Invoices = () => {
       console.error("Failed to export invoices:", error);
     }
   };
-  
 
   const columns = [
     {
@@ -368,7 +368,7 @@ const Invoices = () => {
   );
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <Input
         placeholder="Search Invoices by Number"
         value={searchText}
@@ -390,7 +390,9 @@ const Invoices = () => {
         Export
       </Button>
 
-      <Table columns={columns} dataSource={filteredInvoices} rowKey="key" />
+      <Spin spinning={loading} tip="Loading...">
+        <Table columns={columns} dataSource={filteredInvoices} rowKey="key" />
+      </Spin>
       <InvoiceModal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}

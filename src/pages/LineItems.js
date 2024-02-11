@@ -8,6 +8,7 @@ import {
   Modal,
   Tooltip,
   Select,
+  Spin,
 } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
@@ -29,6 +30,7 @@ const LineItems = () => {
   const [token, setToken] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [userId, setUserId] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -43,6 +45,7 @@ const LineItems = () => {
       try {
         const data = await listLineItems(storedToken);
         setLineItems(data);
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch line items:", error);
       }
@@ -227,7 +230,10 @@ const LineItems = () => {
       >
         Add Line Item
       </Button>
-      <Table columns={columns} dataSource={filteredLineItems} rowKey="id" />
+      <Spin spinning={loading} tip="Loading...">
+        {" "}
+        <Table columns={columns} dataSource={filteredLineItems} rowKey="id" />
+      </Spin>
       <Modal
         title="Confirm Delete"
         visible={deleteModalVisible}

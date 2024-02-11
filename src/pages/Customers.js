@@ -7,6 +7,7 @@ import {
   notification,
   Modal,
   Tooltip,
+  Spin,
 } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
@@ -27,6 +28,7 @@ const Customers = () => {
   const [selectedCustomerData, setSelectedCustomerData] = useState({});
   const [addCustomerData, setAddCustomerData] = useState({});
   const [token, setToken] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -36,6 +38,7 @@ const Customers = () => {
       try {
         const data = await listCustomers(storedToken);
         setCustomers(data);
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch customers:", error);
       }
@@ -173,7 +176,10 @@ const Customers = () => {
       >
         Add Customer
       </Button>
-      <Table columns={columns} dataSource={filteredCustomers} rowKey="id" />
+      <Spin spinning={loading} tip="Loading...">
+        {" "}
+        <Table columns={columns} dataSource={filteredCustomers} rowKey="id" />
+      </Spin>
       <Modal
         title="Confirm Delete"
         visible={deleteModalVisible}
@@ -190,7 +196,6 @@ const Customers = () => {
         onCancel={() => setAddModalVisible(false)}
       >
         <Input
-          placeholder="Customer Name"
           value={addCustomerData.name}
           onChange={(e) =>
             setAddCustomerData({ ...addCustomerData, name: e.target.value })
@@ -198,7 +203,6 @@ const Customers = () => {
           style={{ marginBottom: 10 }}
         />
         <Input
-          placeholder="Customer Address"
           value={addCustomerData.address}
           onChange={(e) =>
             setAddCustomerData({ ...addCustomerData, address: e.target.value })
@@ -213,7 +217,6 @@ const Customers = () => {
         onCancel={() => setEditModalVisible(false)}
       >
         <Input
-          placeholder="Customer Name"
           value={selectedCustomerData.name}
           onChange={(e) =>
             setSelectedCustomerData({
@@ -224,7 +227,6 @@ const Customers = () => {
           style={{ marginBottom: 10 }}
         />
         <Input
-          placeholder="Customer Address"
           value={selectedCustomerData.address}
           onChange={(e) =>
             setSelectedCustomerData({

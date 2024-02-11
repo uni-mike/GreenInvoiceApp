@@ -7,6 +7,7 @@ import {
   notification,
   Modal,
   Tooltip,
+  Spin,
 } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
@@ -26,6 +27,7 @@ const Suppliers = () => {
   const [selectedSupplierData, setSelectedSupplierData] = useState({});
   const [addSupplierData, setAddSupplierData] = useState({});
   const [token, setToken] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -35,6 +37,7 @@ const Suppliers = () => {
       try {
         const data = await listSuppliers(storedToken);
         setSuppliers(data);
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch suppliers:", error);
       }
@@ -172,7 +175,10 @@ const Suppliers = () => {
       >
         Add Supplier
       </Button>
-      <Table columns={columns} dataSource={filteredSuppliers} rowKey="id" />
+      <Spin spinning={loading} tip="Loading...">
+        {" "}
+        <Table columns={columns} dataSource={filteredSuppliers} rowKey="id" />
+      </Spin>
       <Modal
         title="Confirm Delete"
         visible={deleteModalVisible}
