@@ -171,10 +171,10 @@ const Invoices = () => {
       });
     }
   };
-  
+
 
   const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
-    const response = await fetch("./template/invoice.html");
+    const response = await fetch("https://public-bucket-unipath.s3.us-east-2.amazonaws.com/invoice.html");
     let html = await response.text();
 
     const replacePlaceholder = (placeholder, value) => {
