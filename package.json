@@ -24,6 +24,9 @@
     "react-to-print": "^2.14.15",
     "speakeasy": "^2.0.0"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
