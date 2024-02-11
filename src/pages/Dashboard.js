@@ -430,7 +430,7 @@ const Dashboard = () => {
         }}
       >
         <Statistic
-          title="Total Income for Current Year"
+          title="Total Invoices for Current Year"
           value={totalIncomeThisYear}
           precision={2}
           prefix="$"
@@ -450,7 +450,7 @@ const Dashboard = () => {
         }}
       >
         <Statistic
-          title="Total Income to Date Ever"
+          title="Total Invoices to Date"
           value={totalIncomeEver}
           precision={2}
           prefix="$"
@@ -481,14 +481,20 @@ const Dashboard = () => {
         </Select>
         <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
           <Col span={24}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div style={{ flex: "1", marginRight: "10px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap" }}>
+              <div
+                style={{ flex: "1", minWidth: "300px", marginRight: "10px" }}
+              >
                 <TotalIncomeToDate />
               </div>
-              <div style={{ flex: "1", marginRight: "10px" }}>
+              <div
+                style={{ flex: "1", minWidth: "300px", marginRight: "10px" }}
+              >
                 <TotalIncomeEver />
               </div>
-              <div style={{ flex: "1" }}>
+              <div
+                style={{ flex: "1", minWidth: "300px", marginRight: "10px" }}
+              >
                 <Card
                   style={{
                     marginBottom: "16px",
@@ -501,7 +507,9 @@ const Dashboard = () => {
                   />
                 </Card>
               </div>
-              <div style={{ flex: "1" }}>
+              <div
+                style={{ flex: "1", minWidth: "300px", marginRight: "10px" }}
+              >
                 <Card
                   style={{
                     marginBottom: "16px",
@@ -514,8 +522,7 @@ const Dashboard = () => {
                   />
                 </Card>
               </div>
-              {/* New Widget: Cash Flow */}
-              <div style={{ flex: "1" }}>
+              <div style={{ flex: "1", minWidth: "300px" }}>
                 <Card
                   style={{
                     marginBottom: "16px",
@@ -534,7 +541,7 @@ const Dashboard = () => {
           </Col>
         </Row>
         <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-          <Col span={24}>
+          <Col span={12}>
             <Card
               style={{
                 marginBottom: "16px",
@@ -545,9 +552,7 @@ const Dashboard = () => {
               {renderIncomeDistributionChart()}
             </Card>
           </Col>
-        </Row>
-        <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-          <Col span={24}>
+          <Col span={12}>
             <Card
               style={{
                 marginBottom: "16px",
@@ -560,7 +565,7 @@ const Dashboard = () => {
           </Col>
         </Row>
         <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-          <Col span={24}>
+          <Col span={12}>
             <Card
               style={{
                 marginBottom: "16px",
@@ -571,9 +576,7 @@ const Dashboard = () => {
               {renderIncomeTrendByCustomerChart()}
             </Card>
           </Col>
-        </Row>
-        <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-          <Col span={24}>
+          <Col span={12}>
             <Card
               style={{
                 marginBottom: "16px",
