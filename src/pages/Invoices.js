@@ -29,7 +29,7 @@ import {
 
 import InvoiceModal from "../modals/NewInvoiceModal";
 import EditInvoiceModal from "../modals/EditInvoiceModal";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import { nanoid } from "nanoid";
 import { convertToCSV } from "../utils/csvUtils";
 
