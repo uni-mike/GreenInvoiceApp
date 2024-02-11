@@ -318,9 +318,16 @@ const Dashboard = () => {
   };
 
   const TotalIncomeToDate = () => {
-    const totalIncomeToDate = Object.values(incomeCustomers)
-      .flatMap((customer) => Object.values(customer))
+    const totalIncomeThisYear = Object.values(incomeCustomers)
+      .flatMap((customer) => {
+        const validValues = Object.values(customer).filter(
+          (value) => !isNaN(value)
+        );
+
+        return validValues;
+      })
       .reduce((acc, cur) => acc + cur, 0);
+
     return (
       <Card
         style={{
@@ -330,7 +337,7 @@ const Dashboard = () => {
       >
         <Statistic
           title="Total Income for Current Year"
-          value={totalIncomeToDate}
+          value={totalIncomeThisYear}
         />
       </Card>
     );
@@ -339,7 +346,9 @@ const Dashboard = () => {
   const TotalIncomeEver = () => {
     const totalIncomeEver = Object.values(incomeCustomers)
       .flatMap((customer) => Object.values(customer))
+      .filter((value) => !isNaN(value)) // Filter out NaN values
       .reduce((acc, cur) => acc + cur, 0);
+
     return (
       <Card
         style={{
@@ -396,24 +405,23 @@ const Dashboard = () => {
         <Option value="year">Year</Option>
       </Select>
       <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-  <Col span={24}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <div style={{ flex: "1", marginRight: "10px" }}>
-        <TotalIncomeToDate />
-      </div>
-      <div style={{ flex: "1", marginRight: "10px" }}>
-        <TotalIncomeEver />
-      </div>
-      <div style={{ flex: "1", marginRight: "10px" }}>
-        <TotalInvoices />
-      </div>
-      <div style={{ flex: "1" }}>
-        <TotalInvoicesPaid />
-      </div>
-    </div>
-  </Col>
-</Row>
-
+        <Col span={24}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ flex: "1", marginRight: "10px" }}>
+              <TotalIncomeToDate />
+            </div>
+            <div style={{ flex: "1", marginRight: "10px" }}>
+              <TotalIncomeEver />
+            </div>
+            <div style={{ flex: "1", marginRight: "10px" }}>
+              <TotalInvoices />
+            </div>
+            <div style={{ flex: "1" }}>
+              <TotalInvoicesPaid />
+            </div>
+          </div>
+        </Col>
+      </Row>
 
       <Row gutter={[16, 16]}>
         <Col span={12}>
