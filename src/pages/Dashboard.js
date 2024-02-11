@@ -431,7 +431,7 @@ const Dashboard = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Card
-              title={`Income Distribution by Customer`}
+              title={`Income Top-5 customers`}
               bordered={false}
               style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
             >
@@ -449,7 +449,7 @@ const Dashboard = () => {
           </Col>
           <Col span={12}>
             <Card
-              title={`Income Trend by Service Type (${selectedPeriod})`}
+              title={`Income trend top-5 Service Types (${selectedPeriod})`}
               bordered={false}
               style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
             >
@@ -458,7 +458,7 @@ const Dashboard = () => {
           </Col>
           <Col span={12}>
             <Card
-              title={`Income Trend by Customer (${selectedPeriod})`}
+              title={`Income trend top-5 Customer (${selectedPeriod})`}
               bordered={false}
               style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}
             >
