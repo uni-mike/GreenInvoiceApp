@@ -171,6 +171,7 @@ const Invoices = () => {
       });
     }
   };
+  
 
   const loadInvoiceTemplate = async (invoice, lineItemsDetails) => {
     const response = await fetch("./template/invoice.html");
