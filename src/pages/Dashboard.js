@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Select, Card, Statistic, Spin } from "antd";
 import ReactECharts from "echarts-for-react";
-import { listInvoices } from "../api/api";
+import { listInvoices, listUsers } from "../api/api";
 
 const { Option } = Select;
 
@@ -12,34 +12,103 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [totalInvoicesIssued, setTotalInvoicesIssued] = useState(0);
   const [totalInvoicesPaid, setTotalInvoicesPaid] = useState(0);
+  const [netCashFlow, setNetCashFlow] = useState(0);
+  const [taxDownPaymentPercentage, setTaxDownPaymentPercentage] = useState(0);
+  const [monthlySocialSecurityPayment, setMonthlySocialSecurityPayment] =
+    useState(0);
+  const [loggedInUserId, setLoggedInUserId] = useState(null);
+
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
 
   useEffect(() => {
-    const getPeriod = (date) => {
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const quarter = Math.ceil(month / 3);
-      const biMonthlyStart = month % 2 !== 0 ? month : month - 1;
-      const last12Months = new Date();
-      last12Months.setFullYear(last12Months.getFullYear() - 1);
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = decodeToken(token);
+      if (decodedToken && decodedToken.user_id) {
+        setLoggedInUserId(decodedToken.user_id);
+      }
+    }
+  }, []);
 
-      switch (selectedPeriod) {
-        case "month":
-          return `${month}.${year}`;
-        case "quarter":
-          return `Q${quarter}.${year}`;
-        case "ytd":
-          return `YTD.${year}`;
-        case "year":
-          return `Last 12 Months from ${
-            last12Months.getMonth() + 1
-          }.${last12Months.getFullYear()}`;
-        case "bi-monthly":
-          return `Bi-monthly starting ${biMonthlyStart}.${year}`;
-        default:
-          return "";
+  useEffect(() => {
+    const fetchUserSettings = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userData = await listUsers(token, { user_id: loggedInUserId });
+
+        if (Array.isArray(userData)) {
+          const currentUser = userData.find(
+            (user) => user.id === loggedInUserId
+          );
+
+          if (currentUser) {
+            setTaxDownPaymentPercentage(
+              currentUser.tax_down_payment_percentage
+            );
+            setMonthlySocialSecurityPayment(
+              currentUser.monthly_social_security_payment
+            );
+          } else {
+            console.error("Current user not found");
+          }
+        } else {
+          console.error("User data is not in the expected format");
+        }
+      } catch (error) {
+        console.error("Error fetching user settings:", error);
       }
     };
 
+    if (loggedInUserId !== null) {
+      fetchUserSettings();
+    }
+  }, [loggedInUserId]);
+
+  const getPeriod = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const quarter = Math.ceil(month / 3);
+    const biMonthlyStart = month % 2 !== 0 ? month : month - 1;
+    const last12Months = new Date();
+    last12Months.setFullYear(last12Months.getFullYear() - 1);
+
+    switch (selectedPeriod) {
+      case "month":
+        return `${month}.${year}`;
+      case "quarter":
+        return `Q${quarter}.${year}`;
+      case "ytd":
+        return `YTD.${year}`;
+      case "year":
+        return `Last 12 Months from ${
+          last12Months.getMonth() + 1
+        }.${last12Months.getFullYear()}`;
+      case "bi-monthly":
+        return `Bi-monthly starting ${biMonthlyStart}.${year}`;
+      default:
+        return "";
+    }
+  };
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       const token = localStorage.getItem("token");
@@ -49,10 +118,19 @@ const Dashboard = () => {
 
       let issuedCount = 0;
       let paidCount = 0;
+      let totalInvoices = 0;
+      let totalIncomeWithoutVAT = 0;
 
       invoicesData.forEach((invoice) => {
         const issueDate = new Date(invoice.issue_date);
         const period = getPeriod(issueDate);
+
+        totalInvoices += parseFloat(invoice.total_amount);
+
+        invoice.line_items.forEach((item) => {
+          totalIncomeWithoutVAT +=
+            item.price * item.quantity - parseFloat(invoice.tax_amount);
+        });
 
         invoice.line_items.forEach((item) => {
           if (!processedIncomeData[item.name]) {
@@ -79,15 +157,38 @@ const Dashboard = () => {
         }
       });
 
+      const taxDownPaymentDeduction = !isNaN(totalIncomeWithoutVAT)
+        ? (taxDownPaymentPercentage / 100) * totalIncomeWithoutVAT
+        : 0;
+
+      const socialSecurityPaymentDeduction = !isNaN(
+        monthlySocialSecurityPayment
+      )
+        ? monthlySocialSecurityPayment *
+          (selectedPeriod === "month"
+            ? 1
+            : selectedPeriod === "quarter"
+            ? 3
+            : selectedPeriod === "bi-monthly"
+            ? 2
+            : 12)
+        : 0;
+
+      const netCashFlow =
+        totalInvoices -
+        taxDownPaymentDeduction -
+        socialSecurityPaymentDeduction;
+
       setIncomeData(processedIncomeData);
       setIncomeCustomers(processedIncomeCustomers);
       setTotalInvoicesIssued(issuedCount);
       setTotalInvoicesPaid(paidCount);
+      setNetCashFlow(netCashFlow);
       setLoading(false);
     };
 
     fetchData();
-  }, [selectedPeriod]);
+  }, [selectedPeriod, taxDownPaymentPercentage, monthlySocialSecurityPayment]);
 
   const handlePeriodChange = (value) => {
     setSelectedPeriod(value);
@@ -413,55 +514,73 @@ const Dashboard = () => {
                   />
                 </Card>
               </div>
+              {/* New Widget: Cash Flow */}
+              <div style={{ flex: "1" }}>
+                <Card
+                  style={{
+                    marginBottom: "16px",
+                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <Statistic
+                    title="Net Cash Flow"
+                    value={netCashFlow}
+                    precision={2}
+                    prefix="$"
+                  />
+                </Card>
+              </div>
             </div>
           </Col>
         </Row>
-
-        <Row gutter={[16, 16]}>
-          <Col span={12}>
+        <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
+          <Col span={24}>
             <Card
-              title={`Income Top-5 Customers (${selectedPeriod})`}
               style={{
                 marginBottom: "16px",
                 boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
               }}
             >
+              <h3>Income Distribution by Customer</h3>
               {renderIncomeDistributionChart()}
             </Card>
           </Col>
-          <Col span={12}>
+        </Row>
+        <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
+          <Col span={24}>
             <Card
-              title={`Income Trend by Service Type (${selectedPeriod})`}
               style={{
                 marginBottom: "16px",
                 boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
               }}
             >
+              <h3>Income Trend by Service Type</h3>
               {renderIncomeTrendByServiceTypeChart()}
             </Card>
           </Col>
         </Row>
-
-        <Row gutter={[16, 16]}>
-          <Col span={12}>
+        <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
+          <Col span={24}>
             <Card
-              title={`Income Trend by Customer (${selectedPeriod})`}
               style={{
                 marginBottom: "16px",
                 boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
               }}
             >
+              <h3>Income Trend by Customer</h3>
               {renderIncomeTrendByCustomerChart()}
             </Card>
           </Col>
-          <Col span={12}>
+        </Row>
+        <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
+          <Col span={24}>
             <Card
-              title={`Total Income Trend (${selectedPeriod})`}
               style={{
                 marginBottom: "16px",
                 boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
               }}
             >
+              <h3>Total Income Trend</h3>
               {renderTotalIncomeTrendChart()}
             </Card>
           </Col>

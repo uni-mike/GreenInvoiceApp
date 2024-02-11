@@ -1,5 +1,5 @@
-// const BASE_URL = "http://localhost:3000/prod/";
-const BASE_URL = "https://s6su7nf5mh.execute-api.us-east-2.amazonaws.com/prod/";
+const BASE_URL = "http://localhost:3000/prod";
+// const BASE_URL = "https://s6su7nf5mh.execute-api.us-east-2.amazonaws.com/prod/";
 
 // Create a new invoice
 export const createInvoice = async (invoiceData, token) => {
@@ -214,20 +214,31 @@ export const deactivateUser = async (token, userId) => {
 };
 
 // List all users
-export const listUsers = async (token) => {
+export const listUsers = async (token, params) => {
   try {
-    const response = await fetch(`${BASE_URL}/users/list`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      `${BASE_URL}/users/list?user_id=${params.user_id}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
     if (!response.ok) {
       throw new Error("List users failed");
     }
-    const data = await response.json();
-    return data;
+    const userData = await response.json();
+
+    if (typeof userData === "object" && userData !== null) {
+      const usersArray = [userData];
+      return usersArray;
+    } else {
+      throw new Error("User data is not in the expected format");
+    }
   } catch (error) {
+    console.error("Error fetching user data:", error);
     throw error;
   }
 };
