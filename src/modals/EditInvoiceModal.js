@@ -177,7 +177,7 @@ const EditInvoiceModal = ({
 
         <Form.Item
           name="tax_rate"
-          label="Tax Rate (%)"
+          label="VAT Rate (%)"
           rules={[{ required: true }]}
         >
           <InputNumber />

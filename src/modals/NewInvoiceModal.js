@@ -11,7 +11,6 @@ import {
 } from "antd";
 import cuid from "cuid";
 import { createInvoice, listCustomers, listLineItems } from "../api/api";
-// import moment from "moment";
 
 const { Option } = Select;
 
@@ -137,7 +136,6 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         form={form}
         layout="vertical"
         initialValues={{
-          // due_date: moment().add(30, "days"),
           tax_rate: 0,
           currency: "USD",
           status: "New",
@@ -217,7 +215,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         </Form.Item>
         <Form.Item
           name="tax_rate"
-          label="Tax Rate (%)"
+          label="VAT Rate (%)"
           rules={[{ required: true }]}
         >
           <InputNumber min={0} max={100} />

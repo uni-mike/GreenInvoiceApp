@@ -8,6 +8,7 @@ import {
   Modal,
   Tooltip,
   Spin,
+  Select,
 } from "antd";
 import {
   EditOutlined,
@@ -31,6 +32,8 @@ import jwtDecode from "jwt-decode";
 import { nanoid } from "nanoid";
 import { convertToCSV } from "../utils/csvUtils";
 
+const { Option } = Select;
+
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -42,6 +45,7 @@ const Invoices = () => {
   const [userName, setUserName] = useState("");
   const [invoiceHtml, setInvoiceHtml] = useState("");
   const [loading, setLoading] = useState(true);
+  const [exportRange, setExportRange] = useState("all");
 
   const componentRef = useRef();
 
@@ -60,9 +64,12 @@ const Invoices = () => {
     fetchInvoices(token);
   }, []);
 
-  const fetchInvoices = async (token) => {
+  const fetchInvoices = async (token, filter = null) => {
     try {
-      const data = await listInvoices(token);
+      let data = await listInvoices(token);
+      if (filter) {
+        data = data.filter(filter);
+      }
       const dataWithUniqueKeys = data.map((record) => ({
         ...record,
         key: nanoid(),
@@ -73,6 +80,60 @@ const Invoices = () => {
     } catch (error) {
       console.error("Failed to fetch invoices:", error);
     }
+  };
+
+  const handleExportRangeChange = async (value) => {
+    setExportRange(value);
+    setLoading(true);
+
+    let filterFunction = null;
+
+    if (value === "month") {
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear();
+      filterFunction = (invoice) => {
+        const invoiceDate = new Date(invoice.issue_date);
+        return (
+          invoiceDate.getMonth() + 1 === currentMonth &&
+          invoiceDate.getFullYear() === currentYear
+        );
+      };
+    } else if (value === "quarter") {
+      const currentDate = new Date();
+      const currentQuarter = Math.floor((currentDate.getMonth() + 3) / 3);
+      const currentYear = currentDate.getFullYear();
+      filterFunction = (invoice) => {
+        const invoiceDate = new Date(invoice.issue_date);
+        const invoiceQuarter = Math.floor((invoiceDate.getMonth() + 3) / 3);
+        return (
+          invoiceQuarter === currentQuarter &&
+          invoiceDate.getFullYear() === currentYear
+        );
+      };
+    } else if (value === "yearToDate") {
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      filterFunction = (invoice) => {
+        const invoiceDate = new Date(invoice.issue_date);
+        return invoiceDate.getFullYear() === currentYear;
+      };
+    } else if (value === "last12Months") {
+      const currentDate = new Date();
+      const cutoffDate = new Date(
+        currentDate.getFullYear() - 1,
+        currentDate.getMonth(),
+        currentDate.getDate()
+      );
+      filterFunction = (invoice) => {
+        const invoiceDate = new Date(invoice.issue_date);
+        return invoiceDate > cutoffDate;
+      };
+    }
+
+    await fetchInvoices(localStorage.getItem("token"), filterFunction);
+
+    setLoading(false);
   };
 
   const handleSearch = (e) => setSearchText(e.target.value);
@@ -263,9 +324,55 @@ const Invoices = () => {
 
   const handleExportToCSV = async () => {
     try {
-      const exportedData = await fetchExportedInvoices(
-        localStorage.getItem("token")
-      );
+      let exportedData = [];
+
+      if (exportRange === "all") {
+        exportedData = await fetchExportedInvoices(
+          localStorage.getItem("token")
+        );
+      } else if (exportRange === "month") {
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+        exportedData = invoices.filter((invoice) => {
+          const invoiceDate = new Date(invoice.issue_date);
+          return (
+            invoiceDate.getMonth() + 1 === currentMonth &&
+            invoiceDate.getFullYear() === currentYear
+          );
+        });
+      } else if (exportRange === "quarter") {
+        const currentDate = new Date();
+        const currentQuarter = Math.floor((currentDate.getMonth() + 3) / 3);
+        const currentYear = currentDate.getFullYear();
+        exportedData = invoices.filter((invoice) => {
+          const invoiceDate = new Date(invoice.issue_date);
+          const invoiceQuarter = Math.floor((invoiceDate.getMonth() + 3) / 3);
+          return (
+            invoiceQuarter === currentQuarter &&
+            invoiceDate.getFullYear() === currentYear
+          );
+        });
+      } else if (exportRange === "yearToDate") {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        exportedData = invoices.filter((invoice) => {
+          const invoiceDate = new Date(invoice.issue_date);
+          return invoiceDate.getFullYear() === currentYear;
+        });
+      } else if (exportRange === "last12Months") {
+        const currentDate = new Date();
+        const cutoffDate = new Date(
+          currentDate.getFullYear() - 1,
+          currentDate.getMonth(),
+          currentDate.getDate()
+        );
+        exportedData = invoices.filter((invoice) => {
+          const invoiceDate = new Date(invoice.issue_date);
+          return invoiceDate > cutoffDate;
+        });
+      }
+
       const csvData = convertToCSV(exportedData);
 
       const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
@@ -382,6 +489,17 @@ const Invoices = () => {
       >
         Issue New Invoice
       </Button>
+      <Select
+        defaultValue="all"
+        style={{ width: 150, marginBottom: 20, marginLeft: 10 }}
+        onChange={handleExportRangeChange}
+      >
+        <Option value="all">All</Option>
+        <Option value="month">Month</Option>
+        <Option value="quarter">Quarter</Option>
+        <Option value="yearToDate">Year to Date</Option>
+        <Option value="last12Months">Last 12 Months</Option>
+      </Select>
       <Button
         type="primary"
         style={{ marginBottom: 20, marginLeft: 10 }}
