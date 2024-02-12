@@ -149,7 +149,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
           tax_rate: 0,
           currency: "USD",
           status: "New",
-          payment_terms: "net 30",
+          payment_terms: "Net 30",
         }}
       >
         <Form.Item
