@@ -125,6 +125,7 @@ const Dashboard = () => {
       let paidCount = 0;
       let totalInvoices = 0;
       let totalIncomeWithoutVAT = 0;
+      let totalTaxAmount = 0;
 
       invoicesData.forEach((invoice) => {
         const issueDate = new Date(invoice.issue_date);
@@ -137,10 +138,12 @@ const Dashboard = () => {
         }
         totalToDateIncome += totalAmount;
 
+        const taxAmount = parseFloat(invoice.tax_amount) || 0;
+        totalTaxAmount += taxAmount;
+
         invoice.line_items.forEach((item) => {
           const itemTotal =
             (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
-          const taxAmount = parseFloat(invoice.tax_amount) || 0;
           totalIncomeWithoutVAT += itemTotal - taxAmount;
 
           processedIncomeData[item.name] = processedIncomeData[item.name] || {};
@@ -170,7 +173,8 @@ const Dashboard = () => {
       const netCashFlow =
         totalInvoices -
         taxDownPaymentDeduction -
-        socialSecurityPaymentDeduction;
+        socialSecurityPaymentDeduction -
+        totalTaxAmount;
 
       setIncomeData(processedIncomeData);
       setIncomeCustomers(processedIncomeCustomers);
@@ -330,6 +334,8 @@ const Dashboard = () => {
     const restIncome = sortedCustomers
       .slice(5)
       .reduce((acc, customer) => acc + getTotalIncome(customer), 0);
+
+    console.log(incomeCustomers);
 
     const seriesData = top5Customers.map((customer) => ({
       name: customer,
