@@ -118,62 +118,49 @@ const Dashboard = () => {
       const currentYear = new Date().getFullYear();
       let totalCurrentYearIncome = 0;
       let totalToDateIncome = 0;
-  
+
       const processedIncomeData = {};
       const processedIncomeCustomers = {};
       let issuedCount = 0;
       let paidCount = 0;
       let totalInvoices = 0;
       let totalIncomeWithoutVAT = 0;
-      let totalAccumulatedVAT = 0;
-  
+
       invoicesData.forEach((invoice) => {
         const issueDate = new Date(invoice.issue_date);
         const period = getPeriod(issueDate);
         const totalAmount = parseFloat(invoice.total_amount) || 0; // Fallback to 0 if NaN
-        const taxAmount = parseFloat(invoice.tax_amount) || 0;
-        const totalWithoutVAT = totalAmount - taxAmount;
         totalInvoices += totalAmount;
-  
+
         if (new Date(invoice.issue_date).getFullYear() === currentYear) {
           totalCurrentYearIncome += totalAmount;
         }
         totalToDateIncome += totalAmount;
-  
-        totalIncomeWithoutVAT += totalWithoutVAT;
-        totalAccumulatedVAT += taxAmount;
-  
-        // Initialize nested objects for incomeData and incomeCustomers if not already present
-        processedIncomeData[invoice.id] = processedIncomeData[invoice.id] || {};
-        processedIncomeData[invoice.id][period] =
-          (processedIncomeData[invoice.id][period] || 0) + totalWithoutVAT;
-  
-        processedIncomeCustomers[invoice.customer_name] =
-          processedIncomeCustomers[invoice.customer_name] || {};
-        processedIncomeCustomers[invoice.customer_name][period] =
-          (processedIncomeCustomers[invoice.customer_name][period] || 0) +
-          totalWithoutVAT;
-  
+
+        invoice.line_items.forEach((item) => {
+          const itemTotal =
+            (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+          const taxAmount = parseFloat(invoice.tax_amount) || 0;
+          totalIncomeWithoutVAT += itemTotal - taxAmount;
+
+          // Initialize nested objects for incomeData and incomeCustomers if not already present
+          processedIncomeData[item.name] = processedIncomeData[item.name] || {};
+          processedIncomeData[item.name][period] =
+            (processedIncomeData[item.name][period] || 0) + itemTotal;
+
+          processedIncomeCustomers[invoice.customer_name] =
+            processedIncomeCustomers[invoice.customer_name] || {};
+          processedIncomeCustomers[invoice.customer_name][period] =
+            (processedIncomeCustomers[invoice.customer_name][period] || 0) +
+            itemTotal;
+        });
+
         issuedCount++;
         if (invoice.status === "Paid") {
           paidCount++;
         }
-  
-        // Log invoice data
-        console.log("Invoice ID:", invoice.id);
-        console.log("Total Amount:", totalAmount);
-        console.log("Issue Date:", invoice.issue_date);
-        console.log("Tax Amount:", taxAmount);
-        console.log("Total Without VAT:", totalWithoutVAT);
       });
-  
-      // Log total income and deductions
-      console.log("Total Invoices:", totalInvoices);
-      console.log("Total Current Year Income:", totalCurrentYearIncome);
-      console.log("Total To Date Income:", totalToDateIncome);
-      console.log("Total Income Without VAT:", totalIncomeWithoutVAT);
-      console.log("Total Accumulated VAT:", totalAccumulatedVAT);
-  
+
       // Calculate deductions safely, ensuring we're not multiplying or subtracting NaN
       const taxDownPaymentDeduction =
         (isNaN(totalIncomeWithoutVAT) ? 0 : totalIncomeWithoutVAT) *
@@ -181,26 +168,13 @@ const Dashboard = () => {
       const socialSecurityPaymentDeduction =
         (parseFloat(monthlySocialSecurityPayment) || 0) *
         getDeductionMultiplier(selectedPeriod);
-      const accumulatedVATDeduction = totalAccumulatedVAT;
-  
-      // Log deductions
-      console.log("Tax Down Payment Deduction:", taxDownPaymentDeduction);
-      console.log(
-        "Social Security Payment Deduction:",
-        socialSecurityPaymentDeduction
-      );
-      console.log("Accumulated VAT Deduction:", accumulatedVATDeduction);
-  
+
       // Calculate net cash flow safely
       const netCashFlow =
         totalInvoices -
         taxDownPaymentDeduction -
-        socialSecurityPaymentDeduction -
-        accumulatedVATDeduction;
-  
-      // Log net cash flow
-      console.log("Net Cash Flow:", netCashFlow);
-  
+        socialSecurityPaymentDeduction;
+
       setIncomeData(processedIncomeData);
       setIncomeCustomers(processedIncomeCustomers);
       setTotalInvoicesIssued(issuedCount);
@@ -210,11 +184,10 @@ const Dashboard = () => {
       setTotalIncomeToDate(totalToDateIncome);
       setLoading(false);
     };
-  
+
     fetchData();
   }, [selectedPeriod, taxDownPaymentPercentage, monthlySocialSecurityPayment]);
-  
-  
+
   const getDeductionMultiplier = (period) => {
     switch (period) {
       case "month":
