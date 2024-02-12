@@ -82,7 +82,17 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         line_items: values.line_items
           .map((lineItemId) => {
             const item = lineItems.find(({ id }) => id === lineItemId);
-            return item ? { id: item.id, quantity: item.quantity } : null;
+            if (item) {
+              return {
+                id: item.id,
+                name: item.name,
+                user_id: item.user_id,
+                quantity: item.quantity,
+                price: item.price,
+                currency: item.currency,
+              };
+            }
+            return null;
           })
           .filter((item) => item !== null),
         currency: values.currency,
