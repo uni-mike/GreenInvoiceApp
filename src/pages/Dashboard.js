@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Select, Card, Statistic, Spin } from "antd";
 import ReactECharts from "echarts-for-react";
-import { getLineItem, listInvoices, listUsers } from "../api/api";
+import { listInvoices, listUsers } from "../api/api";
 
 const { Option } = Select;
 
@@ -27,7 +27,9 @@ const Dashboard = () => {
       const jsonPayload = decodeURIComponent(
         atob(base64)
           .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .map((c) => {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
           .join("")
       );
 
@@ -123,14 +125,11 @@ const Dashboard = () => {
       let paidCount = 0;
       let totalInvoices = 0;
       let totalIncomeWithoutVAT = 0;
-      let totalAccumulatedVAT = 0;
 
-      for (const invoice of invoicesData) {
+      invoicesData.forEach((invoice) => {
         const issueDate = new Date(invoice.issue_date);
         const period = getPeriod(issueDate);
         const totalAmount = parseFloat(invoice.total_amount) || 0;
-        const taxAmount = parseFloat(invoice.tax_amount) || 0;
-        const totalWithoutVAT = totalAmount - taxAmount;
         totalInvoices += totalAmount;
 
         if (new Date(invoice.issue_date).getFullYear() === currentYear) {
@@ -138,33 +137,28 @@ const Dashboard = () => {
         }
         totalToDateIncome += totalAmount;
 
-        totalIncomeWithoutVAT += totalWithoutVAT;
-        totalAccumulatedVAT += taxAmount;
+        invoice.line_items.forEach((item) => {
+          const itemTotal =
+            (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+          const taxAmount = parseFloat(invoice.tax_amount) || 0;
+          totalIncomeWithoutVAT += itemTotal - taxAmount;
 
-        for (const lineItem of invoice.line_items) {
-          try {
-            const lineItemDetails = await getLineItem(token, lineItem.id);
-            const serviceName = lineItemDetails.name;
-            processedIncomeData[serviceName] =
-              processedIncomeData[serviceName] || {};
-            processedIncomeData[serviceName][period] =
-              (processedIncomeData[serviceName][period] || 0) + totalWithoutVAT;
-          } catch (error) {
-            console.error("Error fetching line item details:", error);
-          }
-        }
+          processedIncomeData[item.name] = processedIncomeData[item.name] || {};
+          processedIncomeData[item.name][period] =
+            (processedIncomeData[item.name][period] || 0) + itemTotal;
 
-        processedIncomeCustomers[invoice.customer_name] =
-          processedIncomeCustomers[invoice.customer_name] || {};
-        processedIncomeCustomers[invoice.customer_name][period] =
-          (processedIncomeCustomers[invoice.customer_name][period] || 0) +
-          totalWithoutVAT;
+          processedIncomeCustomers[invoice.customer_name] =
+            processedIncomeCustomers[invoice.customer_name] || {};
+          processedIncomeCustomers[invoice.customer_name][period] =
+            (processedIncomeCustomers[invoice.customer_name][period] || 0) +
+            itemTotal;
+        });
 
         issuedCount++;
         if (invoice.status === "Paid") {
           paidCount++;
         }
-      }
+      });
 
       const taxDownPaymentDeduction =
         (isNaN(totalIncomeWithoutVAT) ? 0 : totalIncomeWithoutVAT) *
@@ -172,13 +166,11 @@ const Dashboard = () => {
       const socialSecurityPaymentDeduction =
         (parseFloat(monthlySocialSecurityPayment) || 0) *
         getDeductionMultiplier(selectedPeriod);
-      const accumulatedVATDeduction = totalAccumulatedVAT;
 
       const netCashFlow =
         totalInvoices -
         taxDownPaymentDeduction -
-        socialSecurityPaymentDeduction -
-        accumulatedVATDeduction;
+        socialSecurityPaymentDeduction;
 
       setIncomeData(processedIncomeData);
       setIncomeCustomers(processedIncomeCustomers);
@@ -401,16 +393,16 @@ const Dashboard = () => {
       return <div>No data available</div>;
     }
 
-    const totalIncomeTrendData = Object.keys(
-      incomeData[Object.keys(incomeData)[0]]
-    ).map((period, index) => {
-      return Object.values(incomeData).reduce((acc, service) => {
-        const income = service[period];
-        if (!isNaN(income)) {
-          acc += income;
+    const totalIncomeTrendData = {};
+
+    Object.keys(incomeData).forEach((service) => {
+      Object.keys(incomeData[service]).forEach((period) => {
+        if (!totalIncomeTrendData[period]) {
+          totalIncomeTrendData[period] = incomeData[service][period];
+        } else {
+          totalIncomeTrendData[period] += incomeData[service][period];
         }
-        return acc;
-      }, 0);
+      });
     });
 
     return (
@@ -421,14 +413,14 @@ const Dashboard = () => {
           },
           xAxis: {
             type: "category",
-            data: Object.keys(incomeData[Object.keys(incomeData)[0]]),
+            data: Object.keys(totalIncomeTrendData),
           },
           yAxis: {
             type: "value",
           },
           series: [
             {
-              data: totalIncomeTrendData,
+              data: Object.values(totalIncomeTrendData),
               type: "line",
               smooth: true,
             },
@@ -438,42 +430,47 @@ const Dashboard = () => {
     );
   };
 
-  const TotalIncomeToDate = () => (
-    <Card
-      style={{
-        marginBottom: "16px",
-        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      <Statistic
-        title="Total Invoices for Current Year"
-        value={totalIncomeCurrentYear}
-        precision={2}
-        prefix="$"
-      />
-    </Card>
-  );
+  const TotalIncomeToDate = () => {
+    return (
+      <Card
+        style={{
+          marginBottom: "16px",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Statistic
+          title="Total Invoices for Current Year"
+          value={totalIncomeCurrentYear}
+          precision={2}
+          prefix="$"
+        />
+      </Card>
+    );
+  };
 
-  const TotalIncomeEver = () => (
-    <Card
-      style={{
-        marginBottom: "16px",
-        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      <Statistic
-        title="Total Invoices to Date"
-        value={totalIncomeToDate}
-        precision={2}
-        prefix="$"
-      />
-    </Card>
-  );
+  const TotalIncomeEver = () => {
+    return (
+      <Card
+        style={{
+          marginBottom: "16px",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Statistic
+          title="Total Invoices to Date"
+          value={totalIncomeToDate}
+          precision={2}
+          prefix="$"
+        />
+      </Card>
+    );
+  };
 
-  const getTotalIncome = (category) =>
-    Object.values(
+  const getTotalIncome = (category) => {
+    return Object.values(
       incomeData[category] || incomeCustomers[category] || {}
     ).reduce((acc, cur) => acc + cur, 0);
+  };
 
   return (
     <Spin spinning={loading} tip="Loading...">
