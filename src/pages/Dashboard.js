@@ -27,9 +27,7 @@ const Dashboard = () => {
       const jsonPayload = decodeURIComponent(
         atob(base64)
           .split("")
-          .map((c) => {
-            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-          })
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
           .join("")
       );
 
@@ -440,47 +438,42 @@ const Dashboard = () => {
     );
   };
 
-  const TotalIncomeToDate = () => {
-    return (
-      <Card
-        style={{
-          marginBottom: "16px",
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <Statistic
-          title="Total Invoices for Current Year"
-          value={totalIncomeCurrentYear}
-          precision={2}
-          prefix="$"
-        />
-      </Card>
-    );
-  };
+  const TotalIncomeToDate = () => (
+    <Card
+      style={{
+        marginBottom: "16px",
+        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <Statistic
+        title="Total Invoices for Current Year"
+        value={totalIncomeCurrentYear}
+        precision={2}
+        prefix="$"
+      />
+    </Card>
+  );
 
-  const TotalIncomeEver = () => {
-    return (
-      <Card
-        style={{
-          marginBottom: "16px",
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <Statistic
-          title="Total Invoices to Date"
-          value={totalIncomeToDate}
-          precision={2}
-          prefix="$"
-        />
-      </Card>
-    );
-  };
+  const TotalIncomeEver = () => (
+    <Card
+      style={{
+        marginBottom: "16px",
+        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <Statistic
+        title="Total Invoices to Date"
+        value={totalIncomeToDate}
+        precision={2}
+        prefix="$"
+      />
+    </Card>
+  );
 
-  const getTotalIncome = (category) => {
-    return Object.values(
+  const getTotalIncome = (category) =>
+    Object.values(
       incomeData[category] || incomeCustomers[category] || {}
     ).reduce((acc, cur) => acc + cur, 0);
-  };
 
   return (
     <Spin spinning={loading} tip="Loading...">
