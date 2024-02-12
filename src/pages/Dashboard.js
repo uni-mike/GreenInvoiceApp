@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Select, Card, Statistic, Spin } from "antd";
 import ReactECharts from "echarts-for-react";
-import { listInvoices, listUsers } from "../api/api";
+import { getLineItem, listInvoices, listUsers } from "../api/api";
 
 const { Option } = Select;
 
@@ -125,11 +125,14 @@ const Dashboard = () => {
       let paidCount = 0;
       let totalInvoices = 0;
       let totalIncomeWithoutVAT = 0;
+      let totalAccumulatedVAT = 0;
 
-      invoicesData.forEach((invoice) => {
+      for (const invoice of invoicesData) {
         const issueDate = new Date(invoice.issue_date);
         const period = getPeriod(issueDate);
-        const totalAmount = parseFloat(invoice.total_amount) || 0; // Fallback to 0 if NaN
+        const totalAmount = parseFloat(invoice.total_amount) || 0;
+        const taxAmount = parseFloat(invoice.tax_amount) || 0;
+        const totalWithoutVAT = totalAmount - taxAmount;
         totalInvoices += totalAmount;
 
         if (new Date(invoice.issue_date).getFullYear() === currentYear) {
@@ -137,49 +140,53 @@ const Dashboard = () => {
         }
         totalToDateIncome += totalAmount;
 
-        invoice.line_items.forEach((item) => {
-          const itemTotal =
-            (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
-          const taxAmount = parseFloat(invoice.tax_amount) || 0;
-          totalIncomeWithoutVAT += itemTotal - taxAmount;
+        totalIncomeWithoutVAT += totalWithoutVAT;
+        totalAccumulatedVAT += taxAmount;
 
-          // Initialize nested objects for incomeData and incomeCustomers if not already present
-          processedIncomeData[item.name] = processedIncomeData[item.name] || {};
-          processedIncomeData[item.name][period] =
-            (processedIncomeData[item.name][period] || 0) + itemTotal;
+        for (const lineItem of invoice.line_items) {
+          try {
+            const lineItemDetails = await getLineItem(token, lineItem.id);
+            const serviceName = lineItemDetails.name;
+            processedIncomeData[serviceName] =
+              processedIncomeData[serviceName] || {};
+            processedIncomeData[serviceName][period] =
+              (processedIncomeData[serviceName][period] || 0) + totalWithoutVAT;
+          } catch (error) {
+            console.error("Error fetching line item details:", error);
+          }
+        }
 
-          processedIncomeCustomers[invoice.customer_name] =
-            processedIncomeCustomers[invoice.customer_name] || {};
-          processedIncomeCustomers[invoice.customer_name][period] =
-            (processedIncomeCustomers[invoice.customer_name][period] || 0) +
-            itemTotal;
-        });
+        processedIncomeCustomers[invoice.customer_name] =
+          processedIncomeCustomers[invoice.customer_name] || {};
+        processedIncomeCustomers[invoice.customer_name][period] =
+          (processedIncomeCustomers[invoice.customer_name][period] || 0) +
+          totalWithoutVAT;
 
         issuedCount++;
         if (invoice.status === "Paid") {
           paidCount++;
         }
-      });
+      }
 
-      // Calculate deductions safely, ensuring we're not multiplying or subtracting NaN
       const taxDownPaymentDeduction =
         (isNaN(totalIncomeWithoutVAT) ? 0 : totalIncomeWithoutVAT) *
         (parseFloat(taxDownPaymentPercentage) / 100 || 0);
       const socialSecurityPaymentDeduction =
         (parseFloat(monthlySocialSecurityPayment) || 0) *
         getDeductionMultiplier(selectedPeriod);
+      const accumulatedVATDeduction = totalAccumulatedVAT;
 
-      // Calculate net cash flow safely
       const netCashFlow =
         totalInvoices -
         taxDownPaymentDeduction -
-        socialSecurityPaymentDeduction;
+        socialSecurityPaymentDeduction -
+        accumulatedVATDeduction;
 
       setIncomeData(processedIncomeData);
       setIncomeCustomers(processedIncomeCustomers);
       setTotalInvoicesIssued(issuedCount);
       setTotalInvoicesPaid(paidCount);
-      setNetCashFlow(netCashFlow); // This will now be a number, not NaN
+      setNetCashFlow(netCashFlow);
       setTotalIncomeCurrentYear(totalCurrentYearIncome);
       setTotalIncomeToDate(totalToDateIncome);
       setLoading(false);
