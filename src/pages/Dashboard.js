@@ -17,6 +17,8 @@ const Dashboard = () => {
   const [monthlySocialSecurityPayment, setMonthlySocialSecurityPayment] =
     useState(0);
   const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const [totalIncomeCurrentYear, setTotalIncomeCurrentYear] = useState(0);
+  const [totalIncomeToDate, setTotalIncomeToDate] = useState(0);
 
   const decodeToken = (token) => {
     try {
@@ -113,9 +115,12 @@ const Dashboard = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       const invoicesData = await listInvoices(token);
+      const currentYear = new Date().getFullYear();
+      let totalCurrentYearIncome = 0;
+      let totalToDateIncome = 0;
+
       const processedIncomeData = {};
       const processedIncomeCustomers = {};
-
       let issuedCount = 0;
       let paidCount = 0;
       let totalInvoices = 0;
@@ -124,31 +129,30 @@ const Dashboard = () => {
       invoicesData.forEach((invoice) => {
         const issueDate = new Date(invoice.issue_date);
         const period = getPeriod(issueDate);
+        const totalAmount = parseFloat(invoice.total_amount) || 0; // Fallback to 0 if NaN
+        totalInvoices += totalAmount;
 
-        totalInvoices += parseFloat(invoice.total_amount);
+        if (new Date(invoice.issue_date).getFullYear() === currentYear) {
+          totalCurrentYearIncome += totalAmount;
+        }
+        totalToDateIncome += totalAmount;
 
         invoice.line_items.forEach((item) => {
-          totalIncomeWithoutVAT +=
-            item.price * item.quantity - parseFloat(invoice.tax_amount);
-        });
+          const itemTotal =
+            (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+          const taxAmount = parseFloat(invoice.tax_amount) || 0;
+          totalIncomeWithoutVAT += itemTotal - taxAmount;
 
-        invoice.line_items.forEach((item) => {
-          if (!processedIncomeData[item.name]) {
-            processedIncomeData[item.name] = {};
-          }
-          if (!processedIncomeData[item.name][period]) {
-            processedIncomeData[item.name][period] = 0;
-          }
-          processedIncomeData[item.name][period] += item.price * item.quantity;
+          // Initialize nested objects for incomeData and incomeCustomers if not already present
+          processedIncomeData[item.name] = processedIncomeData[item.name] || {};
+          processedIncomeData[item.name][period] =
+            (processedIncomeData[item.name][period] || 0) + itemTotal;
 
-          if (!processedIncomeCustomers[invoice.customer_name]) {
-            processedIncomeCustomers[invoice.customer_name] = {};
-          }
-          if (!processedIncomeCustomers[invoice.customer_name][period]) {
-            processedIncomeCustomers[invoice.customer_name][period] = 0;
-          }
-          processedIncomeCustomers[invoice.customer_name][period] +=
-            item.price * item.quantity;
+          processedIncomeCustomers[invoice.customer_name] =
+            processedIncomeCustomers[invoice.customer_name] || {};
+          processedIncomeCustomers[invoice.customer_name][period] =
+            (processedIncomeCustomers[invoice.customer_name][period] || 0) +
+            itemTotal;
         });
 
         issuedCount++;
@@ -157,23 +161,15 @@ const Dashboard = () => {
         }
       });
 
-      const taxDownPaymentDeduction = !isNaN(totalIncomeWithoutVAT)
-        ? (taxDownPaymentPercentage / 100) * totalIncomeWithoutVAT
-        : 0;
+      // Calculate deductions safely, ensuring we're not multiplying or subtracting NaN
+      const taxDownPaymentDeduction =
+        (isNaN(totalIncomeWithoutVAT) ? 0 : totalIncomeWithoutVAT) *
+        (parseFloat(taxDownPaymentPercentage) / 100 || 0);
+      const socialSecurityPaymentDeduction =
+        (parseFloat(monthlySocialSecurityPayment) || 0) *
+        getDeductionMultiplier(selectedPeriod);
 
-      const socialSecurityPaymentDeduction = !isNaN(
-        monthlySocialSecurityPayment
-      )
-        ? monthlySocialSecurityPayment *
-          (selectedPeriod === "month"
-            ? 1
-            : selectedPeriod === "quarter"
-            ? 3
-            : selectedPeriod === "bi-monthly"
-            ? 2
-            : 12)
-        : 0;
-
+      // Calculate net cash flow safely
       const netCashFlow =
         totalInvoices -
         taxDownPaymentDeduction -
@@ -183,12 +179,30 @@ const Dashboard = () => {
       setIncomeCustomers(processedIncomeCustomers);
       setTotalInvoicesIssued(issuedCount);
       setTotalInvoicesPaid(paidCount);
-      setNetCashFlow(netCashFlow);
+      setNetCashFlow(netCashFlow); // This will now be a number, not NaN
+      setTotalIncomeCurrentYear(totalCurrentYearIncome);
+      setTotalIncomeToDate(totalToDateIncome);
       setLoading(false);
     };
 
     fetchData();
   }, [selectedPeriod, taxDownPaymentPercentage, monthlySocialSecurityPayment]);
+
+  const getDeductionMultiplier = (period) => {
+    switch (period) {
+      case "month":
+        return 1;
+      case "quarter":
+        return 3;
+      case "bi-monthly":
+        return 2;
+      case "year":
+      case "ytd":
+        return 12;
+      default:
+        return 0;
+    }
+  };
 
   const handlePeriodChange = (value) => {
     setSelectedPeriod(value);
@@ -420,8 +434,6 @@ const Dashboard = () => {
   };
 
   const TotalIncomeToDate = () => {
-    const totalIncomeThisYear = 358487.0;
-
     return (
       <Card
         style={{
@@ -431,7 +443,7 @@ const Dashboard = () => {
       >
         <Statistic
           title="Total Invoices for Current Year"
-          value={totalIncomeThisYear}
+          value={totalIncomeCurrentYear}
           precision={2}
           prefix="$"
         />
@@ -440,8 +452,6 @@ const Dashboard = () => {
   };
 
   const TotalIncomeEver = () => {
-    const totalIncomeEver = 358487.0;
-
     return (
       <Card
         style={{
@@ -451,7 +461,7 @@ const Dashboard = () => {
       >
         <Statistic
           title="Total Invoices to Date"
-          value={totalIncomeEver}
+          value={totalIncomeToDate}
           precision={2}
           prefix="$"
         />
