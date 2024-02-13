@@ -69,7 +69,6 @@ const SettingsPage = () => {
   const handleFileUpload = async (file) => {
     setLoading(true);
     try {
-      console.log("Uploading file:", file);
       const responseData = await uploadLogo(token, file);
 
       if (
