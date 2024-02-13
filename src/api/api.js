@@ -1,5 +1,5 @@
-const BASE_URL = "http://localhost:3000/prod";
-// const BASE_URL = "https://s6su7nf5mh.execute-api.us-east-2.amazonaws.com/prod/";
+// const BASE_URL = "http://localhost:3000/prod";
+const BASE_URL = "https://s6su7nf5mh.execute-api.us-east-2.amazonaws.com/prod/";
 
 // Create a new invoice
 export const createInvoice = async (invoiceData, token) => {
@@ -626,7 +626,7 @@ export const fetchExportedInvoices = async (token) => {
   }
 };
 
-// Add methods for file upload and download
+// Files upload and download
 export const uploadLogo = async (token, file) => {
   try {
     const formData = new FormData();
