@@ -53,6 +53,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserSettings = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("token");
         const userData = await listUsers(token, { user_id: loggedInUserId });
 
@@ -76,6 +77,8 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.error("Error fetching user settings:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -84,106 +87,113 @@ const Dashboard = () => {
     }
   }, [loggedInUserId]);
 
-  const getPeriod = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const quarter = Math.ceil(month / 3);
-    const biMonthlyStart = month % 2 !== 0 ? month : month - 1;
-    const last12Months = new Date();
-    last12Months.setFullYear(last12Months.getFullYear() - 1);
-
-    switch (selectedPeriod) {
-      case "month":
-        return `${month}.${year}`;
-      case "quarter":
-        return `Q${quarter}.${year}`;
-      case "ytd":
-        return `YTD.${year}`;
-      case "year":
-        return `Last 12 Months from ${
-          last12Months.getMonth() + 1
-        }.${last12Months.getFullYear()}`;
-      case "bi-monthly":
-        return `Bi-monthly starting ${biMonthlyStart}.${year}`;
-      default:
-        return "";
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      const invoicesData = await listInvoices(token);
-      const currentYear = new Date().getFullYear();
-      let totalCurrentYearIncome = 0;
-      let totalToDateIncome = 0;
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const invoicesData = await listInvoices(token);
 
-      const processedIncomeData = {};
-      const processedIncomeCustomers = {};
-      let issuedCount = 0;
-      let paidCount = 0;
-      let totalInvoices = 0;
-      let totalIncomeWithoutVAT = 0;
-      let totalTaxAmount = 0;
+        const currentYear = new Date().getFullYear();
+        let totalCurrentYearIncome = 0;
+        let totalToDateIncome = 0;
 
-      invoicesData.forEach((invoice) => {
-        const issueDate = new Date(invoice.issue_date);
-        const period = getPeriod(issueDate);
-        const totalAmount = parseFloat(invoice.total_amount) || 0;
-        totalInvoices += totalAmount;
+        const processedIncomeData = {};
+        const processedIncomeCustomers = {};
+        let issuedCount = 0;
+        let paidCount = 0;
+        let totalInvoices = 0;
+        let totalIncomeWithoutVAT = 0;
+        let totalTaxAmount = 0;
 
-        if (new Date(invoice.issue_date).getFullYear() === currentYear) {
-          totalCurrentYearIncome += totalAmount;
-        }
-        totalToDateIncome += totalAmount;
+        const getPeriod = (date) => {
+          const year = date.getFullYear();
+          const month = date.getMonth() + 1;
+          const quarter = Math.ceil(month / 3);
+          const biMonthlyStart = month % 2 !== 0 ? month : month - 1;
+          const last12Months = new Date();
+          last12Months.setFullYear(last12Months.getFullYear() - 1);
 
-        const taxAmount = parseFloat(invoice.tax_amount) || 0;
-        totalTaxAmount += taxAmount;
+          switch (selectedPeriod) {
+            case "month":
+              return `${month}.${year}`;
+            case "quarter":
+              return `Q${quarter}.${year}`;
+            case "ytd":
+              return `YTD.${year}`;
+            case "year":
+              return `Last 12 Months from ${
+                last12Months.getMonth() + 1
+              }.${last12Months.getFullYear()}`;
+            case "bi-monthly":
+              return `Bi-monthly starting ${biMonthlyStart}.${year}`;
+            default:
+              return "";
+          }
+        };
 
-        invoice.line_items.forEach((item) => {
-          const itemTotal =
-            (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
-          totalIncomeWithoutVAT += itemTotal - taxAmount;
+        invoicesData.forEach((invoice) => {
+          const issueDate = new Date(invoice.issue_date);
+          const period = getPeriod(issueDate);
+          const totalAmount = parseFloat(invoice.total_amount) || 0;
+          totalInvoices += totalAmount;
 
-          processedIncomeData[item.name] = processedIncomeData[item.name] || {};
-          processedIncomeData[item.name][period] =
-            (processedIncomeData[item.name][period] || 0) + itemTotal;
+          if (issueDate.getFullYear() === currentYear) {
+            totalCurrentYearIncome += totalAmount;
+          }
+          totalToDateIncome += totalAmount;
 
-          processedIncomeCustomers[invoice.customer_name] =
-            processedIncomeCustomers[invoice.customer_name] || {};
-          processedIncomeCustomers[invoice.customer_name][period] =
-            (processedIncomeCustomers[invoice.customer_name][period] || 0) +
-            itemTotal;
+          const taxAmount = parseFloat(invoice.tax_amount) || 0;
+          totalTaxAmount += taxAmount;
+
+          invoice.line_items.forEach((item) => {
+            const itemTotal =
+              (parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0);
+            totalIncomeWithoutVAT += itemTotal - taxAmount;
+
+            processedIncomeData[item.name] =
+              processedIncomeData[item.name] || {};
+            processedIncomeData[item.name][period] =
+              (processedIncomeData[item.name][period] || 0) + itemTotal;
+
+            processedIncomeCustomers[invoice.customer_name] =
+              processedIncomeCustomers[invoice.customer_name] || {};
+            processedIncomeCustomers[invoice.customer_name][period] =
+              (processedIncomeCustomers[invoice.customer_name][period] || 0) +
+              itemTotal;
+          });
+
+          issuedCount++;
+          if (invoice.status === "Paid") {
+            paidCount++;
+          }
         });
 
-        issuedCount++;
-        if (invoice.status === "Paid") {
-          paidCount++;
-        }
-      });
+        const taxDownPaymentDeduction =
+          (isNaN(totalIncomeWithoutVAT) ? 0 : totalIncomeWithoutVAT) *
+          (parseFloat(taxDownPaymentPercentage) / 100 || 0);
+        const socialSecurityPaymentDeduction =
+          (parseFloat(monthlySocialSecurityPayment) || 0) *
+          getDeductionMultiplier(selectedPeriod);
 
-      const taxDownPaymentDeduction =
-        (isNaN(totalIncomeWithoutVAT) ? 0 : totalIncomeWithoutVAT) *
-        (parseFloat(taxDownPaymentPercentage) / 100 || 0);
-      const socialSecurityPaymentDeduction =
-        (parseFloat(monthlySocialSecurityPayment) || 0) *
-        getDeductionMultiplier(selectedPeriod);
+        const netCashFlow =
+          totalInvoices -
+          taxDownPaymentDeduction -
+          socialSecurityPaymentDeduction -
+          totalTaxAmount;
 
-      const netCashFlow =
-        totalInvoices -
-        taxDownPaymentDeduction -
-        socialSecurityPaymentDeduction -
-        totalTaxAmount;
-
-      setIncomeData(processedIncomeData);
-      setIncomeCustomers(processedIncomeCustomers);
-      setTotalInvoicesIssued(issuedCount);
-      setTotalInvoicesPaid(paidCount);
-      setNetCashFlow(netCashFlow);
-      setTotalIncomeCurrentYear(totalCurrentYearIncome);
-      setTotalIncomeToDate(totalToDateIncome);
-      setLoading(false);
+        setIncomeData(processedIncomeData);
+        setIncomeCustomers(processedIncomeCustomers);
+        setTotalInvoicesIssued(issuedCount);
+        setTotalInvoicesPaid(paidCount);
+        setNetCashFlow(netCashFlow);
+        setTotalIncomeCurrentYear(totalCurrentYearIncome);
+        setTotalIncomeToDate(totalToDateIncome);
+      } catch (error) {
+        console.error("Error fetching and processing invoices:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();

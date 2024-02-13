@@ -176,7 +176,7 @@ export const authenticateUser = async (credentials) => {
 // Update user details
 export const updateUser = async (token, userId, updateData) => {
   try {
-    const response = await fetch(`${BASE_URL}/users/${userId}`, {
+    const response = await fetch(`${BASE_URL}/users/update/${userId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
