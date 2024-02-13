@@ -13,7 +13,6 @@ const SettingsPage = () => {
   const [taxDownPaymentPercentage, setTaxDownPaymentPercentage] = useState("");
   const [monthlySocialSecurityPayment, setMonthlySocialSecurityPayment] =
     useState("");
-  const [customLogoPath, setCustomLogoPath] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,7 +25,6 @@ const SettingsPage = () => {
           email,
           tax_down_payment_percentage,
           monthly_social_security_payment,
-          custom_logo_path,
         } = userData[0];
         setName(name);
         setEmail(email);
@@ -34,7 +32,6 @@ const SettingsPage = () => {
         setMonthlySocialSecurityPayment(
           monthly_social_security_payment.toString()
         );
-        setCustomLogoPath(custom_logo_path || "");
       } catch (error) {
         console.error("Failed to fetch settings:", error);
       }
@@ -52,7 +49,6 @@ const SettingsPage = () => {
         monthly_social_security_payment: parseFloat(
           monthlySocialSecurityPayment
         ),
-        custom_logo_path: customLogoPath,
       };
       await updateUser(token, userId, updateData);
       notification.success({
@@ -73,34 +69,32 @@ const SettingsPage = () => {
     <div style={{ maxWidth: 400, margin: "0 auto" }}>
       <h1 style={{ textAlign: "center" }}>Settings</h1>
       <Spin spinning={loading} tip="Loading...">
-        <label>Name:</label>
+        <label htmlFor="name">Name:</label>
         <Input
+          id="name"
           value={name}
           readOnly
           style={{ marginBottom: 20, width: "100%" }}
         />
-        <label>Email:</label>
+        <label htmlFor="email">Email:</label>
         <Input
+          id="email"
           value={email}
           readOnly
           style={{ marginBottom: 20, width: "100%" }}
         />
-        <label>Tax Down Payment Percentage:</label>
+        <label htmlFor="taxPercentage">Tax Down Payment Percentage:</label>
         <Input
+          id="taxPercentage"
           value={taxDownPaymentPercentage}
           onChange={(e) => setTaxDownPaymentPercentage(e.target.value)}
           style={{ marginBottom: 20, width: "100%" }}
         />
-        <label>Monthly Social Security Payment:</label>
+        <label htmlFor="socialSecurity">Monthly Social Security Payment:</label>
         <Input
+          id="socialSecurity"
           value={monthlySocialSecurityPayment}
           onChange={(e) => setMonthlySocialSecurityPayment(e.target.value)}
-          style={{ marginBottom: 20, width: "100%" }}
-        />
-        <label>Custom Logo Path:</label>
-        <Input
-          value={customLogoPath}
-          onChange={(e) => setCustomLogoPath(e.target.value)}
           style={{ marginBottom: 20, width: "100%" }}
         />
         <Button

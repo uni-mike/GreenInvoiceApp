@@ -1,5 +1,5 @@
-// const BASE_URL = "http://localhost:3000/prod";
-const BASE_URL = "https://s6su7nf5mh.execute-api.us-east-2.amazonaws.com/prod/";
+const BASE_URL = "http://localhost:3000/prod";
+// const BASE_URL = "https://s6su7nf5mh.execute-api.us-east-2.amazonaws.com/prod/";
 
 // Create a new invoice
 export const createInvoice = async (invoiceData, token) => {
@@ -621,6 +621,51 @@ export const fetchExportedInvoices = async (token) => {
     }
     const data = await response.json();
     return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Add methods for file upload and download
+export const uploadLogo = async (token, file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${BASE_URL}/logos/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    console.log(response);
+
+    if (!response.ok) {
+      throw new Error("Upload file failed");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const downloadLogo = async (token, logoPath) => {
+  try {
+    const response = await fetch(`${BASE_URL}/logos/${logoPath}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to download logo");
+    }
+    const logoBlob = await response.blob();
+    return logoBlob;
   } catch (error) {
     throw error;
   }
