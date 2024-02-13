@@ -640,14 +640,14 @@ export const uploadLogo = async (token, file) => {
       body: formData,
     });
 
-    console.log(response);
-
     if (!response.ok) {
-      throw new Error("Upload file failed");
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: "Upload file failed" }));
+      throw new Error(errorData.message || "Upload file failed");
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     throw error;
   }

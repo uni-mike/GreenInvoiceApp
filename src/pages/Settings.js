@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, notification, Spin } from "antd";
-import { updateUser, listUsers } from "../api/api";
+import { Input, Button, notification, Spin, Upload } from "antd";
+import { updateUser, listUsers, uploadLogo } from "../api/api";
 import jwtDecode from "jwt-decode";
 
 const SettingsPage = () => {
@@ -14,6 +14,7 @@ const SettingsPage = () => {
   const [monthlySocialSecurityPayment, setMonthlySocialSecurityPayment] =
     useState("");
   const [loading, setLoading] = useState(false);
+  const [_file, setFile] = useState(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -65,6 +66,56 @@ const SettingsPage = () => {
     setLoading(false);
   };
 
+  const handleFileUpload = async (file) => {
+    setLoading(true);
+    try {
+      console.log("Uploading file:", file);
+      const responseData = await uploadLogo(token, file);
+
+      if (
+        responseData &&
+        responseData.message === "Logo uploaded successfully."
+      ) {
+        notification.success({
+          message: "Upload Successful",
+          description: responseData.message,
+        });
+      } else {
+        notification.error({
+          message: "Upload Failed",
+          description:
+            responseData.message ||
+            "Failed to upload logo. Please try again later.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to upload logo:", error);
+
+      notification.error({
+        message: "Upload Failed",
+        description:
+          error.message ||
+          "An unexpected error occurred. Please try again later.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileChange = (info) => {
+    if (loading) {
+      console.log("Upload in progress. Please wait.");
+      return;
+    }
+
+    if (info.file.status === "uploading") {
+      setFile(info.file.originFileObj);
+      handleFileUpload(info.file.originFileObj);
+    } else if (info.file.status === "removed") {
+      setFile(null);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 400, margin: "0 auto" }}>
       <h1 style={{ textAlign: "center" }}>Settings</h1>
@@ -97,6 +148,25 @@ const SettingsPage = () => {
           onChange={(e) => setMonthlySocialSecurityPayment(e.target.value)}
           style={{ marginBottom: 20, width: "100%" }}
         />
+        <Upload
+          accept=".png,.jpg,.jpeg"
+          showUploadList={false}
+          beforeUpload={(file) => {
+            if (!loading) {
+              setFile(file);
+              handleFileUpload(file);
+            }
+            return false;
+          }}
+          onChange={handleFileChange}
+        >
+          <Button
+            style={{ marginBottom: 20, width: "100%" }}
+            disabled={loading}
+          >
+            Upload Logo
+          </Button>
+        </Upload>
         <Button
           type="primary"
           onClick={handleSaveSettings}
