@@ -7,6 +7,7 @@ import Suppliers from "./pages/Suppliers";
 import Customers from "./pages/Customers";
 import LineItems from "./pages/LineItems";
 import Dashboard from "./pages/Dashboard";
+import SettingsPage from "./pages/Settings";
 
 import { useAuth } from "./pages/AuthContext";
 import { Button, Layout, Menu } from "antd";
@@ -154,6 +155,7 @@ function App() {
               <Route path="/suppliers" element={<Suppliers />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/invoices/lineitems" element={<LineItems />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route
                 path="*"
                 element={

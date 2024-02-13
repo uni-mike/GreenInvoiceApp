@@ -335,8 +335,6 @@ const Dashboard = () => {
       .slice(5)
       .reduce((acc, customer) => acc + getTotalIncome(customer), 0);
 
-    console.log(incomeCustomers);
-
     const seriesData = top5Customers.map((customer) => ({
       name: customer,
       type: "line",
