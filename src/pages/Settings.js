@@ -149,7 +149,7 @@ const SettingsPage = () => {
           style={{ marginBottom: 20, width: "100%" }}
         />
         <Upload
-          accept=".png,.jpg,.jpeg"
+          accept=".png"
           showUploadList={false}
           beforeUpload={(file) => {
             if (!loading) {
