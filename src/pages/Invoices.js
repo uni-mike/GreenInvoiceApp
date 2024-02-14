@@ -275,21 +275,21 @@ const Invoices = () => {
         let lineTotal = item.quantity * parseFloat(item.price);
         subtotal += lineTotal;
         return `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-            item.name || "N/A"
-          }</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-            item.quantity
-          }</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-            invoice.currency
-          } ${parseFloat(item.price).toFixed(2)}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
-            invoice.currency
-          } ${lineTotal.toFixed(2)}</td>
-        </tr>
-      `;
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+              item.name || "N/A"
+            }</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+              item.quantity
+            }</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+              invoice.currency
+            } ${parseFloat(item.price).toFixed(2)}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ccc;">${
+              invoice.currency
+            } ${lineTotal.toFixed(2)}</td>
+          </tr>
+        `;
       })
       .join("");
 
@@ -303,6 +303,13 @@ const Invoices = () => {
     } else {
       replacePlaceholder("tax", "USD N/A");
       replacePlaceholder("total", "USD N/A");
+    }
+
+    if (invoice.invoice_type === "Proforma") {
+      html = html.replace(
+        '<h1 style="color: #333">Invoice</h1>',
+        '<h1 style="color: #333">Proforma invoice</h1>'
+      );
     }
 
     html = html.replace(
