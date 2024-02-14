@@ -147,7 +147,7 @@ const SettingsPage = () => {
           onChange={(e) => setMonthlySocialSecurityPayment(e.target.value)}
           style={{ marginBottom: 20, width: "100%" }}
         />
-        <Upload
+        {/* <Upload
           accept=".png"
           showUploadList={false}
           beforeUpload={(file) => {
@@ -165,7 +165,7 @@ const SettingsPage = () => {
           >
             Upload Logo
           </Button>
-        </Upload>
+        </Upload> */}
         <Button
           type="primary"
           onClick={handleSaveSettings}
