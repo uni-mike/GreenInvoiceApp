@@ -130,6 +130,18 @@ const EditInvoiceModal = ({
         >
           <Input disabled />
         </Form.Item>
+
+        <Form.Item
+          name="invoice_type"
+          label="Type"
+          rules={[{ required: true }]}
+        >
+          <Select>
+            <Option value="Invoice">Invoice</Option>
+            <Option value="Proforma">Proforma</Option>
+          </Select>
+        </Form.Item>
+
         <Form.Item
           name="due_date"
           label="Due Date"

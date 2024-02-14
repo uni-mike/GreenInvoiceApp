@@ -74,6 +74,7 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
 
       const invoiceData = {
         invoice_number: `INV-${generateInvoiceNumber()}`,
+        invoice_type: values.invoice_type,
         due_date: values.due_date.format("YYYY-MM-DD"),
         customer_name: values.customer_name,
         customer_address: form.getFieldValue("bill_to_address"),
@@ -160,6 +161,18 @@ const InvoiceModal = ({ visible, onCancel, onCreate, token }) => {
         >
           <Input disabled />
         </Form.Item>
+
+        <Form.Item
+          name="invoice_type"
+          label="Type"
+          rules={[{ required: true }]}
+        >
+          <Select>
+            <Option value="Invoice">Invoice</Option>
+            <Option value="Proforma">Proforma</Option>
+          </Select>
+        </Form.Item>
+
         <Form.Item
           name="due_date"
           label="Due Date"

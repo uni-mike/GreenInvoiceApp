@@ -395,6 +395,11 @@ const Invoices = () => {
       key: "invoice_number",
     },
     {
+      title: "Invoice Type",
+      dataIndex: "invoice_type",
+      key: "invoice_type",
+    },
+    {
       title: "Issue Date",
       dataIndex: "issue_date",
       key: "issue_date",
