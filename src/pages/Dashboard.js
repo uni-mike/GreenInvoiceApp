@@ -92,7 +92,9 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const invoicesData = await listInvoices(token);
+        const invoicesDataAll = await listInvoices(token);
+        const invoicesData = invoicesDataAll.filter(invoice => invoice.invoice_type === "Invoice");
+
 
         const currentYear = new Date().getFullYear();
         let totalCurrentYearIncome = 0;

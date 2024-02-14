@@ -331,6 +331,7 @@ const Invoices = () => {
 
   const handleExportToCSV = async () => {
     try {
+      setLoading(true);
       let exportedData = [];
 
       if (exportRange === "all") {
@@ -390,8 +391,11 @@ const Invoices = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      setLoading(false);
     } catch (error) {
       console.error("Failed to export invoices:", error);
+      setLoading(false);
     }
   };
 
