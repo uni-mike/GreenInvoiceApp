@@ -21,6 +21,7 @@ import {
   DashboardOutlined,
   MenuOutlined,
 } from "@ant-design/icons";
+import { use } from "echarts";
 
 const { Sider, Content } = Layout;
 
@@ -30,6 +31,8 @@ function App() {
   const [isMobileMenuVisible, setIsMobileMenuVisible] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const navigate = useNavigate();
+
+  const userId = isAuthenticated ? user.user_id : null;
 
   useEffect(() => {
     const handleResize = () => {
@@ -168,7 +171,8 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route
                 path="/tax_advisor_invoices"
-                element={<TaxAdvisorInvoices />}
+                element={<TaxAdvisorInvoices userId={userId} />
+              }
               />
               <Route
                 path="*"
