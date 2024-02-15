@@ -1,25 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { Table, Typography, Button, Modal, Tooltip, Space } from "antd";
-import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
-import { getInvoicesForTaxAdvisor } from "../api/api";
-import { nanoid } from "nanoid";
+import { Table, Typography, Button, Modal, Tooltip, Space, Spin } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
+import { getInvoicesForTaxAdvisor, listUsers } from "../api/api";
 
 const TaxAdvisorInvoices = ({ userId }) => {
   const [invoices, setInvoices] = useState([]);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [viewingInvoice, setViewingInvoice] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [userEmails, setUserEmails] = useState({});
 
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("token");
-        // Check if userId is not null before making the API call
         if (userId !== null) {
           const data = await getInvoicesForTaxAdvisor(token, userId);
+          console.log(data);
           setInvoices(data);
+          const customerIds = [
+            ...new Set(data.map((invoice) => invoice.user_id)),
+          ];
+          const promises = customerIds.map((customerId) =>
+            listUsers(token, { user_id: customerId })
+          );
+          const userDataArray = await Promise.all(promises);
+          const userEmailMap = {};
+          userDataArray.forEach((userData, index) => {
+            const customerId = customerIds[index];
+            if (Array.isArray(userData) && userData.length > 0) {
+              const user = userData[0];
+              userEmailMap[customerId] = user.email;
+            }
+          });
+          setUserEmails(userEmailMap);
         }
       } catch (error) {
         console.error("Error fetching invoices for tax advisor:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -27,6 +47,12 @@ const TaxAdvisorInvoices = ({ userId }) => {
   }, [userId]);
 
   const columns = [
+    {
+      title: "Customer Email",
+      dataIndex: "user_id",
+      key: "user_id",
+      render: (customerId) => userEmails[customerId] || "N/A",
+    },
     {
       title: "Invoice Number",
       dataIndex: "invoice_number",
@@ -121,7 +147,13 @@ const TaxAdvisorInvoices = ({ userId }) => {
   return (
     <div>
       <Typography.Title level={2}>Tax Advisor Invoices</Typography.Title>
-      <Table columns={columns} dataSource={invoices} rowKey="id" />
+      {loading ? (
+        <Spin tip="Loading...">
+          <Table columns={columns} dataSource={invoices} rowKey="id" />
+        </Spin>
+      ) : (
+        <Table columns={columns} dataSource={invoices} rowKey="id" />
+      )}
 
       <Modal
         title="Invoice Details"
@@ -132,11 +164,10 @@ const TaxAdvisorInvoices = ({ userId }) => {
             Close
           </Button>,
         ]}
-        style={{ maxHeight: "70vh" }} // Add this style to limit the modal's height
+        style={{ maxHeight: "70vh" }}
       >
         <div style={{ overflowY: "auto", padding: "0 20px" }}>
           {" "}
-          {/* Change overflowY to auto */}
           <p>Invoice Number: {viewingInvoice?.invoice_number}</p>
           <p>Invoice Type: {viewingInvoice?.invoice_type}</p>
           <p>Issue Date: {viewingInvoice?.issue_date}</p>
@@ -150,7 +181,6 @@ const TaxAdvisorInvoices = ({ userId }) => {
           </p>
           <p>Customer: {viewingInvoice?.customer_name}</p>
           <p>Status: {viewingInvoice?.status}</p>
-          {/* Render line items */}
           {viewingInvoice?.line_items &&
             viewingInvoice?.line_items.length > 0 && (
               <div>

@@ -62,18 +62,27 @@ export const updateInvoice = async (token, invoiceId, updateData) => {
   }
 };
 
-// List all invoices for the current user
-export const listInvoices = async (token) => {
+export const listInvoices = async (token, userId, advisorId) => {
   try {
-    const response = await fetch(`${BASE_URL}/invoices/list`, {
+    let url = `${BASE_URL}/invoices/list`;
+    // Adjust the URL based on the presence of userId or advisorId
+    if (userId) {
+      url += `?user_id=${userId}`;
+    } else if (advisorId) {
+      url += `?advisor_id=${advisorId}`;
+    }
+
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     if (!response.ok) {
       throw new Error("List invoices failed");
     }
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -666,6 +675,29 @@ export const downloadLogo = async (token, logoPath) => {
     }
     const logoBlob = await response.blob();
     return logoBlob;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// List invoices to tax advisor
+
+export const getInvoicesForTaxAdvisor = async (token, userId) => {
+  try {
+    const url = `${BASE_URL}/invoices/tax-advisor/${userId}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Get invoices for tax advisor failed");
+    }
+
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw error;
   }
