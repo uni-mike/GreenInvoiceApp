@@ -86,6 +86,10 @@ const SettingsPage = () => {
       if (Array.isArray(userData) && userData.length > 0) {
         const { id } = userData[0];
         setTaxAdvisorId(id);
+        notification.success({
+          message: "User Found",
+          description: "Tax advisor found successfully.",
+        });
       } else {
         notification.error({
           message: "User Not Found",
@@ -101,6 +105,7 @@ const SettingsPage = () => {
       });
     }
   };
+  
 
   return (
     <div style={{ maxWidth: 400, margin: "0 auto" }}>

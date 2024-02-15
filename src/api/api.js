@@ -225,15 +225,19 @@ export const deactivateUser = async (token, userId) => {
 // List all users
 export const listUsers = async (token, params) => {
   try {
-    const response = await fetch(
-      `${BASE_URL}/users/list?user_id=${params.user_id}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    let url = `${BASE_URL}/users/list`;
+    if (params.user_id) {
+      url += `?user_id=${params.user_id}`;
+    } else if (params.email) {
+      url += `?email=${params.email}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error("List users failed");
@@ -241,7 +245,8 @@ export const listUsers = async (token, params) => {
     const userData = await response.json();
 
     if (typeof userData === "object" && userData !== null) {
-      const usersArray = [userData];
+      // If a single user is returned, wrap it in an array
+      const usersArray = Array.isArray(userData) ? userData : [userData];
       return usersArray;
     } else {
       throw new Error("User data is not in the expected format");
