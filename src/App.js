@@ -8,7 +8,7 @@ import Customers from "./pages/Customers";
 import LineItems from "./pages/LineItems";
 import Dashboard from "./pages/Dashboard";
 import SettingsPage from "./pages/Settings";
-
+import TaxAdvisorInvoices from "./pages/TaxAdvisorInvoices";
 import { useAuth } from "./pages/AuthContext";
 import { Button, Layout, Menu } from "antd";
 import {
@@ -25,7 +25,7 @@ import {
 const { Sider, Content } = Layout;
 
 function App() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileMenuVisible, setIsMobileMenuVisible] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -81,6 +81,11 @@ function App() {
                 <Menu.Item key="2" icon={<FileTextOutlined />}>
                   <Link to="/invoices">Invoices</Link>
                 </Menu.Item>
+                {user.role === "tax_advisor" && (
+                  <Menu.Item key="8" icon={<FileTextOutlined />}>
+                    <Link to="/tax_advisor_invoices">Tax Advisor Invoices</Link>
+                  </Menu.Item>
+                )}
                 <Menu.Item key="3" icon={<UserOutlined />}>
                   <Link to="/suppliers">Suppliers</Link>
                 </Menu.Item>
@@ -118,6 +123,11 @@ function App() {
                 <Menu.Item key="2" icon={<FileTextOutlined />}>
                   <Link to="/invoices">Invoices</Link>
                 </Menu.Item>
+                {user.role === "tax_advisor" && (
+                  <Menu.Item key="8" icon={<FileTextOutlined />}>
+                    <Link to="/tax_advisor_invoices">Tax Advisor Invoices</Link>
+                  </Menu.Item>
+                )}
                 <Menu.Item key="3" icon={<UserOutlined />}>
                   <Link to="/suppliers">Suppliers</Link>
                 </Menu.Item>
@@ -156,6 +166,10 @@ function App() {
               <Route path="/customers" element={<Customers />} />
               <Route path="/invoices/lineitems" element={<LineItems />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route
+                path="/tax_advisor_invoices"
+                element={<TaxAdvisorInvoices />}
+              />
               <Route
                 path="*"
                 element={

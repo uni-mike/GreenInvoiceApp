@@ -4,6 +4,7 @@ import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api/api";
 import { useAuth } from "./AuthContext";
+import jwtDecode from "jwt-decode";
 
 const clientId =
   "835774101543-nbskjj7th3jc169u6g8gr28m8jss0h8p.apps.googleusercontent.com";
@@ -41,6 +42,7 @@ const Login = () => {
             email: authResponse.email,
             google_id: authResponse.google_id,
             name: authResponse.name,
+            role: authResponse.role,
           });
 
           if (otp) {
@@ -81,18 +83,27 @@ const Login = () => {
   };
 
   const handleAuthenticationSuccess = (response) => {
-    const { userData, token } = response;
+    const { token } = response;
+  
+    const decodedToken = jwtDecode(token);
+  
+    const role = decodedToken.role || "default_role";
+  
     if (token) {
       localStorage.setItem("token", token);
     }
-
+  
+    const { user_google_id } = decodedToken;
+  
     authContext.setUser({
-      username: userData.name,
-      user_id: userData.google_id,
+      username: decodedToken.user_email,
+      user_id: user_google_id,
+      role: role,
     });
     authContext.setIsAuthenticated(true);
     navigate("/dashboard");
   };
+  
 
   return (
     <div

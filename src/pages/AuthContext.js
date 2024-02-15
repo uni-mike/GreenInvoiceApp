@@ -26,7 +26,11 @@ export function AuthProvider({ children }) {
       try {
         const decoded = jwtDecode(token);
         if (decoded.user_id) {
-          setUser({ user_id: decoded.user_id, username: decoded.username });
+          setUser({
+            user_id: decoded.user_id,
+            username: decoded.user_email,
+            role: decoded.role,
+          });
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
@@ -38,7 +42,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
     }
     setLoaded(true);
-  }, [token]);
+  }, []);
 
   const saveToken = (newToken) => {
     localStorage.setItem("token", newToken);
@@ -57,6 +61,10 @@ export function AuthProvider({ children }) {
     setTempUserData(userData);
   };
 
+  const getToken = () => {
+    return token;
+  };
+
   const contextValue = useMemo(
     () => ({
       isAuthenticated,
@@ -67,6 +75,7 @@ export function AuthProvider({ children }) {
       logout,
       requireOtpValidation,
       loaded,
+      getToken,
       setUser,
       setIsAuthenticated,
       setToken,
