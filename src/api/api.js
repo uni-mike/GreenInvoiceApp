@@ -707,3 +707,26 @@ export const getInvoicesForTaxAdvisor = async (token, userId) => {
     throw error;
   }
 };
+
+// Assign tax_advisor role to a user
+export const assignTaxAdvisorRole = async (token, userId) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/users/assign-tax-advisor/${userId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Assign tax_advisor role failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};

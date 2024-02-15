@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Input, Button, notification, Spin } from "antd";
-import { updateUser, listUsers } from "../api/api";
+import { updateUser, listUsers, assignTaxAdvisorRole } from "../api/api";
 import jwtDecode from "jwt-decode";
 
 const SettingsPage = () => {
@@ -66,6 +66,11 @@ const SettingsPage = () => {
         advisor_id: taxAdvisorId,
       };
       await updateUser(token, userId, updateData);
+
+      if (taxAdvisorId) {
+        await assignTaxAdvisorRole(token, taxAdvisorId);
+      }
+
       notification.success({
         message: "Settings Updated",
         description: "Your settings have been updated successfully.",
@@ -76,8 +81,9 @@ const SettingsPage = () => {
         message: "Update Failed",
         description: "Failed to update settings. Please try again later.",
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleTaxAdvisorSearch = async () => {
@@ -105,7 +111,6 @@ const SettingsPage = () => {
       });
     }
   };
-  
 
   return (
     <div style={{ maxWidth: 400, margin: "0 auto" }}>
