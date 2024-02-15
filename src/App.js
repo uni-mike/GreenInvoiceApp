@@ -21,7 +21,6 @@ import {
   DashboardOutlined,
   MenuOutlined,
 } from "@ant-design/icons";
-import { use } from "echarts";
 
 const { Sider, Content } = Layout;
 
@@ -171,8 +170,7 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route
                 path="/tax_advisor_invoices"
-                element={<TaxAdvisorInvoices userId={userId} />
-              }
+                element={<TaxAdvisorInvoices userId={userId} />}
               />
               <Route
                 path="*"

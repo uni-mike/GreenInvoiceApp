@@ -17,7 +17,6 @@ const TaxAdvisorInvoices = ({ userId }) => {
         const token = localStorage.getItem("token");
         if (userId !== null) {
           const data = await getInvoicesForTaxAdvisor(token, userId);
-          console.log(data);
           setInvoices(data);
           const customerIds = [
             ...new Set(data.map((invoice) => invoice.user_id)),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, notification, Spin, Upload } from "antd";
-import { updateUser, listUsers, uploadLogo } from "../api/api";
+import { Input, Button, notification, Spin } from "antd";
+import { updateUser, listUsers } from "../api/api";
 import jwtDecode from "jwt-decode";
 
 const SettingsPage = () => {
@@ -14,7 +14,8 @@ const SettingsPage = () => {
   const [monthlySocialSecurityPayment, setMonthlySocialSecurityPayment] =
     useState("");
   const [loading, setLoading] = useState(false);
-  const [_file, setFile] = useState(null);
+  const [taxAdvisorEmail, setTaxAdvisorEmail] = useState("");
+  const [taxAdvisorId, setTaxAdvisorId] = useState(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -26,13 +27,25 @@ const SettingsPage = () => {
           email,
           tax_down_payment_percentage,
           monthly_social_security_payment,
+          advisor_id,
         } = userData[0];
+
         setName(name);
         setEmail(email);
         setTaxDownPaymentPercentage(tax_down_payment_percentage.toString());
         setMonthlySocialSecurityPayment(
           monthly_social_security_payment.toString()
         );
+        setTaxAdvisorId(advisor_id);
+
+        if (advisor_id) {
+          const taxAdvisorData = await listUsers(token, {
+            user_id: advisor_id,
+          });
+          if (Array.isArray(taxAdvisorData) && taxAdvisorData.length > 0) {
+            setTaxAdvisorEmail(taxAdvisorData[0].email);
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch settings:", error);
       }
@@ -50,6 +63,7 @@ const SettingsPage = () => {
         monthly_social_security_payment: parseFloat(
           monthlySocialSecurityPayment
         ),
+        advisor_id: taxAdvisorId,
       };
       await updateUser(token, userId, updateData);
       notification.success({
@@ -66,52 +80,25 @@ const SettingsPage = () => {
     setLoading(false);
   };
 
-  const handleFileUpload = async (file) => {
-    setLoading(true);
+  const handleTaxAdvisorSearch = async () => {
     try {
-      const responseData = await uploadLogo(token, file);
-
-      if (
-        responseData &&
-        responseData.message === "Logo uploaded successfully."
-      ) {
-        notification.success({
-          message: "Upload Successful",
-          description: responseData.message,
-        });
+      const userData = await listUsers(token, { email: taxAdvisorEmail });
+      if (Array.isArray(userData) && userData.length > 0) {
+        const { id } = userData[0];
+        setTaxAdvisorId(id);
       } else {
         notification.error({
-          message: "Upload Failed",
-          description:
-            responseData.message ||
-            "Failed to upload logo. Please try again later.",
+          message: "User Not Found",
+          description: "No user found with the provided email.",
         });
       }
     } catch (error) {
-      console.error("Failed to upload logo:", error);
-
+      console.error("Failed to search for tax advisor:", error);
       notification.error({
-        message: "Upload Failed",
+        message: "Search Failed",
         description:
-          error.message ||
-          "An unexpected error occurred. Please try again later.",
+          "Failed to search for tax advisor. Please try again later.",
       });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFileChange = (info) => {
-    if (loading) {
-      console.log("Upload in progress. Please wait.");
-      return;
-    }
-
-    if (info.file.status === "uploading") {
-      setFile(info.file.originFileObj);
-      handleFileUpload(info.file.originFileObj);
-    } else if (info.file.status === "removed") {
-      setFile(null);
     }
   };
 
@@ -147,25 +134,20 @@ const SettingsPage = () => {
           onChange={(e) => setMonthlySocialSecurityPayment(e.target.value)}
           style={{ marginBottom: 20, width: "100%" }}
         />
-        {/* <Upload
-          accept=".png"
-          showUploadList={false}
-          beforeUpload={(file) => {
-            if (!loading) {
-              setFile(file);
-              handleFileUpload(file);
-            }
-            return false;
-          }}
-          onChange={handleFileChange}
+        <label htmlFor="taxAdvisorEmail">Tax Advisor Email:</label>
+        <Input
+          id="taxAdvisorEmail"
+          value={taxAdvisorEmail}
+          onChange={(e) => setTaxAdvisorEmail(e.target.value)}
+          style={{ marginBottom: 20, width: "100%" }}
+        />
+        <Button
+          type="primary"
+          onClick={handleTaxAdvisorSearch}
+          style={{ marginBottom: 20, width: "100%" }}
         >
-          <Button
-            style={{ marginBottom: 20, width: "100%" }}
-            disabled={loading}
-          >
-            Upload Logo
-          </Button>
-        </Upload> */}
+          Search Tax Advisor
+        </Button>
         <Button
           type="primary"
           onClick={handleSaveSettings}
