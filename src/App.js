@@ -85,7 +85,7 @@ function App() {
                 </Menu.Item>
                 {user.role === "tax_advisor" && (
                   <Menu.Item key="8" icon={<FileTextOutlined />}>
-                    <Link to="/tax_advisor_invoices">Tax Advisor Invoices</Link>
+                    <Link to="/tax_advisor_invoices">Clients Invoices</Link>
                   </Menu.Item>
                 )}
                 <Menu.Item key="3" icon={<UserOutlined />}>
@@ -127,7 +127,7 @@ function App() {
                 </Menu.Item>
                 {user.role === "tax_advisor" && (
                   <Menu.Item key="8" icon={<FileTextOutlined />}>
-                    <Link to="/tax_advisor_invoices">Tax Advisor Invoices</Link>
+                    <Link to="/tax_advisor_invoices">Clients Invoices</Link>
                   </Menu.Item>
                 )}
                 <Menu.Item key="3" icon={<UserOutlined />}>

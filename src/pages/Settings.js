@@ -144,7 +144,7 @@ const SettingsPage = () => {
           onChange={(e) => setMonthlySocialSecurityPayment(e.target.value)}
           style={{ marginBottom: 20, width: "100%" }}
         />
-        <label htmlFor="taxAdvisorEmail">Tax Advisor Email:</label>
+        <label htmlFor="taxAdvisorEmail">Share invoices with:</label>
         <Input
           id="taxAdvisorEmail"
           value={taxAdvisorEmail}
@@ -156,7 +156,7 @@ const SettingsPage = () => {
           onClick={handleTaxAdvisorSearch}
           style={{ marginBottom: 20, width: "100%" }}
         >
-          Search Tax Advisor
+          Search Invoices Manager
         </Button>
         <Button
           type="primary"
