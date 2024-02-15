@@ -97,8 +97,9 @@ const Login = () => {
   
     authContext.setUser({
       username: decodedToken.user_email,
-      user_id: user_google_id,
+      user_id: decodedToken.user_id,
       role: role,
+      google_id: user_google_id
     });
     authContext.setIsAuthenticated(true);
     navigate("/dashboard");

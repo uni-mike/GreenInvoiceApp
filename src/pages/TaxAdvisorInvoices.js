@@ -42,7 +42,9 @@ const TaxAdvisorInvoices = ({ userId }) => {
       }
     };
 
-    fetchInvoices();
+    if (userId !== null) {
+      fetchInvoices();
+    }
   }, [userId]);
 
   const columns = [
