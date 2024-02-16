@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Input, Button, notification, Spin } from "antd";
-import { updateUser, listUsers, assignTaxAdvisorRole } from "../api/api";
+import { updateUser, listUsers } from "../api/api";
 import jwtDecode from "jwt-decode";
 
 const SettingsPage = () => {
@@ -66,10 +66,6 @@ const SettingsPage = () => {
         advisor_id: taxAdvisorId,
       };
       await updateUser(token, userId, updateData);
-
-      if (taxAdvisorId) {
-        await assignTaxAdvisorRole(token, taxAdvisorId);
-      }
 
       notification.success({
         message: "Settings Updated",

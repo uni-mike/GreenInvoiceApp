@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login";
 import Invoices from "./pages/Invoices";
-import Suppliers from "./pages/Suppliers";
+// import Suppliers from "./pages/Suppliers";
 import Customers from "./pages/Customers";
 import LineItems from "./pages/LineItems";
 import Dashboard from "./pages/Dashboard";
@@ -13,13 +13,14 @@ import { useAuth } from "./pages/AuthContext";
 import { Button, Layout, Menu } from "antd";
 import {
   FileTextOutlined,
-  UserOutlined,
+  // UserOutlined,
   TeamOutlined,
   SettingOutlined,
   LogoutOutlined,
   AppstoreAddOutlined,
   DashboardOutlined,
   MenuOutlined,
+  ShareAltOutlined,
 } from "@ant-design/icons";
 
 const { Sider, Content } = Layout;
@@ -83,14 +84,12 @@ function App() {
                 <Menu.Item key="2" icon={<FileTextOutlined />}>
                   <Link to="/invoices">Invoices</Link>
                 </Menu.Item>
-                {user.role === "tax_advisor" && (
-                  <Menu.Item key="8" icon={<FileTextOutlined />}>
-                    <Link to="/tax_advisor_invoices">Clients Invoices</Link>
-                  </Menu.Item>
-                )}
-                <Menu.Item key="3" icon={<UserOutlined />}>
-                  <Link to="/suppliers">Suppliers</Link>
+                <Menu.Item key="8" icon={<FileTextOutlined />}>
+                  <Link to="/tax_advisor_invoices">Shared with me</Link>
                 </Menu.Item>
+                {/* <Menu.Item key="3" icon={<UserOutlined />}>
+                  <Link to="/suppliers">Suppliers</Link>
+                </Menu.Item> */}
                 <Menu.Item key="4" icon={<TeamOutlined />}>
                   <Link to="/customers">Customers</Link>
                 </Menu.Item>
@@ -125,14 +124,12 @@ function App() {
                 <Menu.Item key="2" icon={<FileTextOutlined />}>
                   <Link to="/invoices">Invoices</Link>
                 </Menu.Item>
-                {user.role === "tax_advisor" && (
-                  <Menu.Item key="8" icon={<FileTextOutlined />}>
-                    <Link to="/tax_advisor_invoices">Clients Invoices</Link>
-                  </Menu.Item>
-                )}
-                <Menu.Item key="3" icon={<UserOutlined />}>
-                  <Link to="/suppliers">Suppliers</Link>
+                <Menu.Item key="8" icon={<ShareAltOutlined />}>
+                  <Link to="/tax_advisor_invoices">Shared with me</Link>
                 </Menu.Item>
+                {/* <Menu.Item key="3" icon={<UserOutlined />}>
+                  <Link to="/suppliers">Suppliers</Link>
+                </Menu.Item> */}
                 <Menu.Item key="4" icon={<TeamOutlined />}>
                   <Link to="/customers">Customers</Link>
                 </Menu.Item>
@@ -164,7 +161,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/invoices" element={<Invoices />} />
-              <Route path="/suppliers" element={<Suppliers />} />
+              {/* <Route path="/suppliers" element={<Suppliers />} /> */}
               <Route path="/customers" element={<Customers />} />
               <Route path="/invoices/lineitems" element={<LineItems />} />
               <Route path="/settings" element={<SettingsPage />} />

@@ -147,7 +147,7 @@ const TaxAdvisorInvoices = ({ userId }) => {
 
   return (
     <div>
-      <Typography.Title level={2}>Clients Invoices</Typography.Title>
+      <Typography.Title level={2}>Shared with me</Typography.Title>
       {loading ? (
         <Spin tip="Loading...">
           <Table columns={columns} dataSource={invoices} rowKey="id" />
