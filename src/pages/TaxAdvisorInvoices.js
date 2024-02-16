@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Table, Typography, Button, Modal, Tooltip, Space, Spin } from "antd";
-import { EyeOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Typography,
+  Button,
+  Modal,
+  Tooltip,
+  Space,
+  Spin,
+  Select,
+} from "antd";
+import { EyeOutlined, DownloadOutlined } from "@ant-design/icons";
 import { getInvoicesForTaxAdvisor, listUsers } from "../api/api";
+import { convertToCSV } from "../utils/csvUtils";
+
+const { Option } = Select;
 
 const TaxAdvisorInvoices = ({ userId }) => {
   const [invoices, setInvoices] = useState([]);
@@ -9,6 +21,8 @@ const TaxAdvisorInvoices = ({ userId }) => {
   const [viewingInvoice, setViewingInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userEmails, setUserEmails] = useState({});
+  const [filteredCustomerId, setFilteredCustomerId] = useState(null);
+  const [customerEmails, setCustomerEmails] = useState([]);
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -34,6 +48,7 @@ const TaxAdvisorInvoices = ({ userId }) => {
             }
           });
           setUserEmails(userEmailMap);
+          setCustomerEmails(Object.values(userEmailMap));
         }
       } catch (error) {
         console.error("Error fetching invoices for tax advisor:", error);
@@ -46,6 +61,15 @@ const TaxAdvisorInvoices = ({ userId }) => {
       fetchInvoices();
     }
   }, [userId]);
+
+  const formatCurrency = (value, currency) => {
+    const formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 2,
+    });
+    return formatter.format(value);
+  };
 
   const columns = [
     {
@@ -126,15 +150,6 @@ const TaxAdvisorInvoices = ({ userId }) => {
     },
   ];
 
-  const formatCurrency = (value, currency) => {
-    const formatter = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency,
-      minimumFractionDigits: 2,
-    });
-    return formatter.format(value);
-  };
-
   const handleViewInvoice = (invoice) => {
     setViewingInvoice(invoice);
     setViewModalVisible(true);
@@ -145,9 +160,61 @@ const TaxAdvisorInvoices = ({ userId }) => {
     setViewModalVisible(false);
   };
 
+  const handleCustomerFilterChange = (customerId) => {
+    setFilteredCustomerId(customerId);
+  };
+
+  const handleExportToCSV = () => {
+    let dataToExport = invoices;
+    if (filteredCustomerId) {
+      dataToExport = invoices.filter(
+        (invoice) => invoice.user_id === filteredCustomerId
+      );
+    }
+
+    dataToExport.forEach((invoice) => {
+      invoice.total_amount = parseFloat(invoice.total_amount);
+      invoice.tax_amount = parseFloat(invoice.tax_amount);
+    });
+
+    const csvContent = convertToCSV(dataToExport);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "invoices.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
     <div>
       <Typography.Title level={2}>Shared with me</Typography.Title>
+      <Space>
+        <Select
+          style={{ width: 200 }}
+          placeholder="Filter by Customer Email"
+          onChange={handleCustomerFilterChange}
+        >
+          {customerEmails.map((email) => (
+            <Option key={email} value={email}>
+              {email}
+            </Option>
+          ))}
+        </Select>
+        <Tooltip title="Export to CSV">
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            onClick={handleExportToCSV}
+          >
+            Export to CSV
+          </Button>
+        </Tooltip>
+      </Space>
       {loading ? (
         <Spin tip="Loading...">
           <Table columns={columns} dataSource={invoices} rowKey="id" />
@@ -168,7 +235,6 @@ const TaxAdvisorInvoices = ({ userId }) => {
         style={{ maxHeight: "70vh" }}
       >
         <div style={{ overflowY: "auto", padding: "0 20px" }}>
-          {" "}
           <p>Invoice Number: {viewingInvoice?.invoice_number}</p>
           <p>Invoice Type: {viewingInvoice?.invoice_type}</p>
           <p>Issue Date: {viewingInvoice?.issue_date}</p>

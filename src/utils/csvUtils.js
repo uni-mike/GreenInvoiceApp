@@ -8,9 +8,7 @@ export const convertToCSV = (data) => {
 
   const formatLineItems = (lineItems) => {
     return lineItems
-      .map((item) => {
-        return `${item.name}: ${item.quantity} x ${item.price}`;
-      })
+      .map((item) => `${item.name}: ${item.quantity} x ${item.price}`)
       .join("; ");
   };
 
@@ -44,7 +42,7 @@ export const convertToCSV = (data) => {
       tax_amount,
       taxRate.toFixed(2),
       description || "",
-      customer_name,
+      `"${customer_name}"`,
       paid,
       status,
       `"${lineItemsString}"`,
@@ -54,7 +52,7 @@ export const convertToCSV = (data) => {
   });
 
   const headerRow =
-    "Invoice Number,Issue Date,Due Date,Currency,Total Amount,Tax Amount,Tax Rate,Description,Customer Name, Paid,Status,Line Items";
+    "Invoice Number,Issue Date,Due Date,Currency,Total Amount,Tax Amount,Tax Rate,Description,Customer Name,Paid,Status,Line Items";
   csvRows.unshift(headerRow);
 
   return csvRows.join("\n");
