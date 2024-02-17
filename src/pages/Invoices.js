@@ -202,7 +202,7 @@ const Invoices = () => {
 
   const handleSendInvoiceEmail = async () => {
     try {
-      const email = await prompt(
+      const email = prompt(
         "Please enter the email address to send the invoice to:"
       );
       if (email === null) return;
