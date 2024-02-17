@@ -90,7 +90,7 @@ const SettingsPage = () => {
         setTaxAdvisorId(id);
         notification.success({
           message: "User Found",
-          description: "Tax advisor found successfully.",
+          description: "User found successfully.",
         });
       } else {
         notification.error({
@@ -103,7 +103,7 @@ const SettingsPage = () => {
       notification.error({
         message: "Search Failed",
         description:
-          "Failed to search for tax advisor. Please try again later.",
+          "Failed to search for user. Please try again later.",
       });
     }
   };
@@ -152,7 +152,7 @@ const SettingsPage = () => {
           onClick={handleTaxAdvisorSearch}
           style={{ marginBottom: 20, width: "100%" }}
         >
-          Search Invoices Manager
+          Search user
         </Button>
         <Button
           type="primary"

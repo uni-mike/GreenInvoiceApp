@@ -392,6 +392,7 @@ const Invoices = () => {
       const csvData = convertToCSV(exportedData);
 
       const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+
       const link = document.createElement("a");
       link.setAttribute("href", URL.createObjectURL(blob));
       link.setAttribute("download", "invoices.csv");
