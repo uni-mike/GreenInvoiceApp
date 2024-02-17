@@ -146,21 +146,28 @@ const Invoices = () => {
   };
 
   const handleViewInvoice = async (invoice) => {
+    setLoading(true);
     setViewingInvoice(invoice);
     const token = localStorage.getItem("token");
     const lineItemsDetailsPromises = invoice.line_items.map((lineItem) =>
       getLineItem(token, lineItem.id)
     );
-    const lineItemsDetails = await Promise.all(lineItemsDetailsPromises);
+    try {
+      const lineItemsDetails = await Promise.all(lineItemsDetailsPromises);
 
-    const lineItemsWithUniqueIds = lineItemsDetails.map((item) => ({
-      ...item,
-      id: nanoid(),
-    }));
+      const lineItemsWithUniqueIds = lineItemsDetails.map((item) => ({
+        ...item,
+        id: nanoid(),
+      }));
 
-    const html = await loadInvoiceTemplate(invoice, lineItemsWithUniqueIds);
-    setInvoiceHtml(html);
-    setViewModalVisible(true);
+      const html = await loadInvoiceTemplate(invoice, lineItemsWithUniqueIds);
+      setInvoiceHtml(html);
+      setViewModalVisible(true);
+    } catch (error) {
+      console.error("Failed to load invoice details:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteInvoice = async (invoice) => {
