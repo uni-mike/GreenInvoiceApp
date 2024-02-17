@@ -383,10 +383,6 @@ const Invoices = () => {
 
       exportedData = exportedData.map((invoice) => ({
         ...invoice,
-        customer_name: `"${(invoice.customer_name || "N/A").replace(
-          /"/g,
-          '""'
-        )}"`,
       }));
 
       const csvData = convertToCSV(exportedData);
