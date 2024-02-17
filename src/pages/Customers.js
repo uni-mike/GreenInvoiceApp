@@ -86,7 +86,7 @@ const Customers = () => {
       const data = await createCustomer(token, addCustomerData);
       notification.success({
         message: "Customer Created",
-        description: `Customer ${data.name} has been created successfully.`,
+        description: `Customer has been created successfully.`,
       });
       setAddModalVisible(false);
       refreshCustomerList();
@@ -104,7 +104,7 @@ const Customers = () => {
       );
       notification.success({
         message: "Customer Updated",
-        description: `Customer ${data.name} has been updated successfully.`,
+        description: `Customer ${selectedCustomerData.name} has been updated successfully.`,
       });
       setEditModalVisible(false);
       refreshCustomerList();
@@ -123,7 +123,7 @@ const Customers = () => {
   };
 
   const filteredCustomers = customers.filter((customer) =>
-    customer.name.includes(searchText)
+    customer.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const columns = [
@@ -136,6 +136,16 @@ const Customers = () => {
       title: "Address",
       dataIndex: "address",
       key: "address",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Phone",
+      dataIndex: "phone",
+      key: "phone",
     },
     {
       title: "Actions",
@@ -177,7 +187,6 @@ const Customers = () => {
         Add Customer
       </Button>
       <Spin spinning={loading} tip="Loading...">
-        {" "}
         <Table columns={columns} dataSource={filteredCustomers} rowKey="id" />
       </Spin>
       <Modal
@@ -196,6 +205,7 @@ const Customers = () => {
         onCancel={() => setAddModalVisible(false)}
       >
         <Input
+          placeholder="Name"
           value={addCustomerData.name}
           onChange={(e) =>
             setAddCustomerData({ ...addCustomerData, name: e.target.value })
@@ -203,9 +213,26 @@ const Customers = () => {
           style={{ marginBottom: 10 }}
         />
         <Input
+          placeholder="Address"
           value={addCustomerData.address}
           onChange={(e) =>
             setAddCustomerData({ ...addCustomerData, address: e.target.value })
+          }
+          style={{ marginBottom: 10 }}
+        />
+        <Input
+          placeholder="Email"
+          value={addCustomerData.email}
+          onChange={(e) =>
+            setAddCustomerData({ ...addCustomerData, email: e.target.value })
+          }
+          style={{ marginBottom: 10 }}
+        />
+        <Input
+          placeholder="Phone"
+          value={addCustomerData.phone}
+          onChange={(e) =>
+            setAddCustomerData({ ...addCustomerData, phone: e.target.value })
           }
           style={{ marginBottom: 10 }}
         />
@@ -217,6 +244,7 @@ const Customers = () => {
         onCancel={() => setEditModalVisible(false)}
       >
         <Input
+          placeholder="Name"
           value={selectedCustomerData.name}
           onChange={(e) =>
             setSelectedCustomerData({
@@ -227,11 +255,34 @@ const Customers = () => {
           style={{ marginBottom: 10 }}
         />
         <Input
+          placeholder="Address"
           value={selectedCustomerData.address}
           onChange={(e) =>
             setSelectedCustomerData({
               ...selectedCustomerData,
               address: e.target.value,
+            })
+          }
+          style={{ marginBottom: 10 }}
+        />
+        <Input
+          placeholder="Email"
+          value={selectedCustomerData.email}
+          onChange={(e) =>
+            setSelectedCustomerData({
+              ...selectedCustomerData,
+              email: e.target.value,
+            })
+          }
+          style={{ marginBottom: 10 }}
+        />
+        <Input
+          placeholder="Phone"
+          value={selectedCustomerData.phone}
+          onChange={(e) =>
+            setSelectedCustomerData({
+              ...selectedCustomerData,
+              phone: e.target.value,
             })
           }
           style={{ marginBottom: 10 }}

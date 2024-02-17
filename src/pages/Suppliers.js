@@ -103,7 +103,7 @@ const Suppliers = () => {
       );
       notification.success({
         message: "Supplier Updated",
-        description: `Supplier ${data.name} has been updated successfully.`,
+        description: `Supplier ${selectedSupplierData.name} has been updated successfully.`,
       });
       setEditModalVisible(false);
       refreshSupplierList();
