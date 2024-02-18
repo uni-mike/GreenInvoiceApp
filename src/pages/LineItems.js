@@ -76,24 +76,29 @@ const LineItems = () => {
     setSearchText(e.target.value);
   };
 
-  const handleDeleteLineItem = async (lineItem) => {
-    setDeleteModalVisible(true);
+  const handleDeleteLineItem = (lineItem) => {
     setSelectedLineItem(lineItem);
+    setDeleteModalVisible(true);
   };
 
   const confirmDeleteLineItem = async () => {
-    if (selectedLineItem) {
-      try {
-        await deleteLineItem(token, selectedLineItem.id);
-        notification.success({
-          message: "Line Item Deleted",
-          description: `Line Item has been deleted successfully.`,
-        });
-        setDeleteModalVisible(false);
-        refreshLineItemList();
-      } catch (error) {
-        console.error("Failed to delete line item:", error);
-      }
+    setLoading(true);
+    try {
+      await deleteLineItem(token, selectedLineItem.id);
+      notification.success({
+        message: "Line Item Deleted",
+        description: `Line Item ${selectedLineItem.name} has been deleted successfully.`,
+      });
+      refreshLineItemList();
+    } catch (error) {
+      notification.error({
+        message: "Deletion Failed",
+        description: `Failed to delete line item ${selectedLineItem.name}.`,
+      });
+    } finally {
+      setDeleteModalVisible(false);
+      setSelectedLineItem(null);
+      setLoading(false);
     }
   };
 
@@ -107,31 +112,34 @@ const LineItems = () => {
   };
 
   const addNewLineItem = async () => {
+    setLoading(true);
     try {
-      const newItemData = {
+      await createLineItem(token, {
         ...addLineItemData,
         currency: selectedCurrency,
         user_id: userId,
-      };
-
-      const data = await createLineItem(token, newItemData);
-
+      });
       notification.success({
         message: "Line Item Created",
-        description: `Line Item ${data.name} has been created successfully.`,
+        description: `Line Item has been created successfully.`,
       });
-
-      setAddLineItemData({});
       setAddModalVisible(false);
-      refreshLineItemList();
+      setAddLineItemData({});
+      await refreshLineItemList();
     } catch (error) {
-      console.error("Failed to create line item:", error);
+      notification.error({
+        message: "Creation Failed",
+        description: "Failed to create line item.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const editExistingLineItem = async () => {
+    setLoading(true);
     try {
-      const data = await updateLineItem(
+      await updateLineItem(
         token,
         selectedLineItemData.id,
         selectedLineItemData
@@ -141,9 +149,14 @@ const LineItems = () => {
         description: `Line Item has been updated successfully.`,
       });
       setEditModalVisible(false);
-      refreshLineItemList();
+      await refreshLineItemList();
     } catch (error) {
-      console.error("Failed to update line item:", error);
+      notification.error({
+        message: "Update Failed",
+        description: "Failed to update line item.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,11 +197,7 @@ const LineItems = () => {
       dataIndex: "price",
       key: "price",
       width: 150,
-      render: (text, record) => (
-        <span>
-          {`${record.currency} ${formatCurrency(text || 0, record.currency)}`}
-        </span>
-      ),
+      render: (text) => <span>{formatCurrency(text || 0)}</span>,
     },
     {
       title: "Actions",
@@ -201,6 +210,7 @@ const LineItems = () => {
               type="primary"
               icon={<EditOutlined />}
               onClick={() => handleEditLineItem(record)}
+              confirmLoading={loading}
             />
           </Tooltip>
           <Tooltip title="Delete">
@@ -208,6 +218,7 @@ const LineItems = () => {
               danger
               icon={<DeleteOutlined />}
               onClick={() => handleDeleteLineItem(record)}
+              confirmLoading={loading}
             />
           </Tooltip>
         </Space>
@@ -227,6 +238,7 @@ const LineItems = () => {
         type="primary"
         style={{ marginBottom: 20, marginLeft: 10 }}
         onClick={handleAddLineItem}
+        confirmLoading={loading}
       >
         Add Line Item
       </Button>
@@ -234,20 +246,23 @@ const LineItems = () => {
         {" "}
         <Table columns={columns} dataSource={filteredLineItems} rowKey="id" />
       </Spin>
+
       <Modal
-        title="Confirm Delete"
+        title="Confirm Deletion"
         visible={deleteModalVisible}
         onOk={confirmDeleteLineItem}
         onCancel={() => setDeleteModalVisible(false)}
+        confirmLoading={loading}
       >
-        Are you sure you want to delete Line Item{" "}
-        {selectedLineItem ? selectedLineItem.name : ""}?
+        Are you sure you want to delete this line item?
       </Modal>
+
       <Modal
         title="Add Line Item"
         visible={addModalVisible}
         onOk={addNewLineItem}
         onCancel={() => setAddModalVisible(false)}
+        confirmLoading={loading}
       >
         <Input
           placeholder="Line Item Name"
@@ -289,6 +304,7 @@ const LineItems = () => {
         visible={editModalVisible}
         onOk={editExistingLineItem}
         onCancel={() => setEditModalVisible(false)}
+        confirmLoading={loading}
       >
         <Input
           placeholder="Line Item Name"
