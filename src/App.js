@@ -9,6 +9,7 @@ import LineItems from "./pages/LineItems";
 import Dashboard from "./pages/Dashboard";
 import SettingsPage from "./pages/Settings";
 import TaxAdvisorInvoices from "./pages/TaxAdvisorInvoices";
+import Expenses from "./pages/Expenses";
 import { useAuth } from "./pages/AuthContext";
 import { Button, Layout, Menu } from "antd";
 import {
@@ -21,6 +22,7 @@ import {
   DashboardOutlined,
   MenuOutlined,
   ShareAltOutlined,
+  BankOutlined,
 } from "@ant-design/icons";
 
 const { Sider, Content } = Layout;
@@ -96,11 +98,14 @@ function App() {
                 <Menu.Item key="5" icon={<AppstoreAddOutlined />}>
                   <Link to="/invoices/lineitems">Line Items</Link>
                 </Menu.Item>
-                <Menu.Item key="6" icon={<SettingOutlined />}>
+                <Menu.Item key="6" icon={<BankOutlined />}>
+                  <Link to="/expenses">Expenses</Link>
+                </Menu.Item>
+                <Menu.Item key="7" icon={<SettingOutlined />}>
                   <Link to="/settings">Settings</Link>
                 </Menu.Item>
                 <Menu.Item
-                  key="7"
+                  key="8"
                   icon={<LogoutOutlined />}
                   onClick={handleLogout}
                 >
@@ -124,7 +129,7 @@ function App() {
                 <Menu.Item key="2" icon={<FileTextOutlined />}>
                   <Link to="/invoices">Invoices</Link>
                 </Menu.Item>
-                <Menu.Item key="8" icon={<ShareAltOutlined />}>
+                <Menu.Item key="3" icon={<ShareAltOutlined />}>
                   <Link to="/tax_advisor_invoices">Shared with me</Link>
                 </Menu.Item>
                 {/* <Menu.Item key="3" icon={<UserOutlined />}>
@@ -136,11 +141,14 @@ function App() {
                 <Menu.Item key="5" icon={<AppstoreAddOutlined />}>
                   <Link to="/invoices/lineitems">Line Items</Link>
                 </Menu.Item>
-                <Menu.Item key="6" icon={<SettingOutlined />}>
+                <Menu.Item key="6" icon={<BankOutlined />}>
+                  <Link to="/expenses">Expenses</Link>
+                </Menu.Item>
+                <Menu.Item key="7" icon={<SettingOutlined />}>
                   <Link to="/settings">Settings</Link>
                 </Menu.Item>
                 <Menu.Item
-                  key="7"
+                  key="8"
                   icon={<LogoutOutlined />}
                   onClick={handleLogout}
                 >
@@ -164,6 +172,7 @@ function App() {
               {/* <Route path="/suppliers" element={<Suppliers />} /> */}
               <Route path="/customers" element={<Customers />} />
               <Route path="/invoices/lineitems" element={<LineItems />} />
+              <Route path="/expenses" element={<Expenses />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route
                 path="/tax_advisor_invoices"

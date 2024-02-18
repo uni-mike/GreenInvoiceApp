@@ -707,3 +707,87 @@ export const getInvoicesForTaxAdvisor = async (token, userId) => {
     throw error;
   }
 };
+
+// Create a new expense
+export const createExpense = async (expenseData, token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/expenses`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(expenseData),
+    });
+    if (!response.ok) {
+      throw new Error("Create expense failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Fetch expenses
+export const getExpenses = async (token, userId = null) => {
+  try {
+    let url = `${BASE_URL}/expenses`;
+    if (userId) {
+      url += `?user_id=${userId}`;
+    }
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Fetching expenses failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Update an expense
+export const updateExpense = async (expenseId, updateData, token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/expenses/${expenseId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updateData),
+    });
+    if (!response.ok) {
+      throw new Error("Update expense failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete (soft delete) an expense
+export const deleteExpense = async (expenseId, token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/expenses/${expenseId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Delete expense failed");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
