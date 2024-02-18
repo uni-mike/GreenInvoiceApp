@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Select, Card, Statistic, Spin } from "antd";
 import ReactECharts from "echarts-for-react";
-import { listInvoices, listUsers } from "../api/api";
+import { getExpenses, listInvoices, listUsers } from "../api/api";
 
 const { Option } = Select;
 
@@ -92,6 +92,7 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
+        const expensesData = await getExpenses(token, loggedInUserId);
         const invoicesDataAll = await listInvoices(token);
         const invoicesData = invoicesDataAll.filter(invoice => invoice.invoice_type === "Invoice");
 
@@ -99,6 +100,7 @@ const Dashboard = () => {
         const currentYear = new Date().getFullYear();
         let totalCurrentYearIncome = 0;
         let totalToDateIncome = 0;
+        let totalExpenses = expensesData.reduce((acc, expense) => acc + parseFloat(expense.amount || 0), 0);
 
         const processedIncomeData = {};
         const processedIncomeCustomers = {};
@@ -182,7 +184,8 @@ const Dashboard = () => {
           totalInvoices -
           taxDownPaymentDeduction -
           socialSecurityPaymentDeduction -
-          totalTaxAmount;
+          totalTaxAmount-
+          totalExpenses;
 
         setIncomeData(processedIncomeData);
         setIncomeCustomers(processedIncomeCustomers);
@@ -199,7 +202,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [selectedPeriod, taxDownPaymentPercentage, monthlySocialSecurityPayment]);
+  }, [selectedPeriod, taxDownPaymentPercentage, monthlySocialSecurityPayment, loggedInUserId]);
 
   const getDeductionMultiplier = (period) => {
     switch (period) {
