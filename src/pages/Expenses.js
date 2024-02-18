@@ -113,10 +113,11 @@ const Expenses = () => {
   };
 
   const handleAddExpense = async () => {
+    setLoading(true);
     try {
       await createExpense(addExpenseData, token);
       setAddModalVisible(false);
-      refreshExpenses();
+      await refreshExpenses();
       notification.success({ message: "Expense added successfully" });
       setAddExpenseData({
         description: "",
@@ -133,34 +134,42 @@ const Expenses = () => {
         message: "Failed to add expense",
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEditExpense = async () => {
+    setLoading(true);
     try {
       await updateExpense(selectedExpense.id, selectedExpenseData, token);
       setEditModalVisible(false);
-      refreshExpenses();
+      await refreshExpenses();
       notification.success({ message: "Expense updated successfully" });
     } catch (error) {
       notification.error({
         message: "Failed to update expense",
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteExpense = async () => {
+    setLoading(true);
     try {
       await deleteExpense(selectedExpense.id, token);
       setDeleteModalVisible(false);
-      refreshExpenses();
+      await refreshExpenses();
       notification.success({ message: "Expense deleted successfully" });
     } catch (error) {
       notification.error({
         message: "Failed to delete expense",
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -266,6 +275,7 @@ const Expenses = () => {
         visible={addModalVisible}
         onOk={handleAddExpense}
         onCancel={() => setAddModalVisible(false)}
+        confirmLoading={loading}
       >
         <Input
           placeholder="Description"
@@ -373,6 +383,7 @@ const Expenses = () => {
         visible={editModalVisible}
         onOk={() => handleEditExpense()}
         onCancel={() => setEditModalVisible(false)}
+        confirmLoading={loading}
       >
         <Input
           placeholder="Description"
@@ -493,8 +504,9 @@ const Expenses = () => {
       <Modal
         title="Confirm Deletion"
         visible={deleteModalVisible}
-        onOk={() => handleDeleteExpense(selectedExpense.id)}
+        onOk={handleDeleteExpense}
         onCancel={() => setDeleteModalVisible(false)}
+        confirmLoading={loading}
       >
         Are you sure you want to delete this expense?
       </Modal>

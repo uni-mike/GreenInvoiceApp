@@ -31,6 +31,7 @@ const Customers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
 
@@ -38,9 +39,10 @@ const Customers = () => {
       try {
         const data = await listCustomers(storedToken);
         setCustomers(data);
-        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch customers:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -57,6 +59,7 @@ const Customers = () => {
   };
 
   const confirmDeleteCustomer = async () => {
+    setLoading(true);
     if (selectedCustomer) {
       try {
         await deleteCustomer(token, selectedCustomer.id);
@@ -65,9 +68,15 @@ const Customers = () => {
           description: `Customer ${selectedCustomer.name} has been deleted successfully.`,
         });
         setDeleteModalVisible(false);
-        refreshCustomerList();
+        await refreshCustomerList();
       } catch (error) {
         console.error("Failed to delete customer:", error);
+        notification.error({
+          message: "Deletion Failed",
+          description: `Failed to delete customer ${selectedCustomer.name}.`,
+        });
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -82,22 +91,30 @@ const Customers = () => {
   };
 
   const addNewCustomer = async () => {
+    setLoading(true);
     try {
-      const data = await createCustomer(token, addCustomerData);
+      await createCustomer(token, addCustomerData);
       notification.success({
         message: "Customer Created",
         description: `Customer has been created successfully.`,
       });
       setAddModalVisible(false);
-      refreshCustomerList();
+      await refreshCustomerList();
     } catch (error) {
       console.error("Failed to create customer:", error);
+      notification.error({
+        message: "Creation Failed",
+        description: `Failed to create customer.`,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const editExistingCustomer = async () => {
+    setLoading(true);
     try {
-      const data = await updateCustomer(
+      await updateCustomer(
         token,
         selectedCustomerData.id,
         selectedCustomerData
@@ -107,9 +124,15 @@ const Customers = () => {
         description: `Customer ${selectedCustomerData.name} has been updated successfully.`,
       });
       setEditModalVisible(false);
-      refreshCustomerList();
+      await refreshCustomerList();
     } catch (error) {
       console.error("Failed to update customer:", error);
+      notification.error({
+        message: "Update Failed",
+        description: `Failed to update customer ${selectedCustomerData.name}.`,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -194,6 +217,7 @@ const Customers = () => {
         visible={deleteModalVisible}
         onOk={confirmDeleteCustomer}
         onCancel={() => setDeleteModalVisible(false)}
+        confirmLoading={loading}
       >
         Are you sure you want to delete customer{" "}
         {selectedCustomer ? selectedCustomer.name : ""}?
@@ -203,6 +227,7 @@ const Customers = () => {
         visible={addModalVisible}
         onOk={addNewCustomer}
         onCancel={() => setAddModalVisible(false)}
+        confirmLoading={loading}
       >
         <Input
           placeholder="Name"
@@ -242,6 +267,7 @@ const Customers = () => {
         visible={editModalVisible}
         onOk={editExistingCustomer}
         onCancel={() => setEditModalVisible(false)}
+        confirmLoading={loading}
       >
         <Input
           placeholder="Name"
