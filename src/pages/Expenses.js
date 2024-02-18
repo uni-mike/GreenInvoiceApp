@@ -231,6 +231,18 @@ const Expenses = () => {
     expense.description.toLowerCase().includes(searchText.toLowerCase())
   );
 
+  const statusOptions = [
+    { label: "Pending", value: "Pending" },
+    { label: "Approved", value: "Approved" },
+    { label: "Rejected", value: "Rejected" },
+  ];
+
+  const paymentMethodOptions = [
+    { label: "Credit Card", value: "Credit Card" },
+    { label: "Cash", value: "Cash" },
+    { label: "Bank Transfer", value: "Bank Transfer" },
+  ];
+
   return (
     <div>
       <Input
@@ -302,25 +314,42 @@ const Expenses = () => {
           <Option value="Utilities">Utilities</Option>
           <Option value="Other">Other</Option>
         </Select>
-        <Input
+        <Select
           placeholder="Payment Method"
-          value={addExpenseData.payment_method}
-          onChange={(e) =>
-            setAddExpenseData({
-              ...addExpenseData,
-              payment_method: e.target.value,
+          value={selectedExpenseData.payment_method}
+          onChange={(value) =>
+            setSelectedExpenseData({
+              ...selectedExpenseData,
+              payment_method: value,
             })
           }
-          style={{ marginBottom: 10 }}
-        />
-        <Input
+          style={{ width: "100%", marginBottom: 10 }}
+        >
+          {paymentMethodOptions.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
+            </Option>
+          ))}
+        </Select>
+
+        <Select
           placeholder="Status"
-          value={addExpenseData.status}
-          onChange={(e) =>
-            setAddExpenseData({ ...addExpenseData, status: e.target.value })
+          value={selectedExpenseData.status}
+          onChange={(value) =>
+            setSelectedExpenseData({
+              ...selectedExpenseData,
+              status: value,
+            })
           }
-          style={{ marginBottom: 10 }}
-        />
+          style={{ width: "100%", marginBottom: 10 }}
+        >
+          {statusOptions.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
+            </Option>
+          ))}
+        </Select>
+
         <Input
           placeholder="Vendor"
           value={addExpenseData.vendor}
@@ -401,28 +430,42 @@ const Expenses = () => {
           <Option value="Utilities">Utilities</Option>
           <Option value="Other">Other</Option>
         </Select>
-        <Input
+        <Select
           placeholder="Payment Method"
           value={selectedExpenseData.payment_method}
-          onChange={(e) =>
+          onChange={(value) =>
             setSelectedExpenseData({
               ...selectedExpenseData,
-              payment_method: e.target.value,
+              payment_method: value,
             })
           }
-          style={{ marginBottom: 10 }}
-        />
-        <Input
+          style={{ width: "100%", marginBottom: 10 }}
+        >
+          {paymentMethodOptions.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
+            </Option>
+          ))}
+        </Select>
+
+        <Select
           placeholder="Status"
           value={selectedExpenseData.status}
-          onChange={(e) =>
+          onChange={(value) =>
             setSelectedExpenseData({
               ...selectedExpenseData,
-              status: e.target.value,
+              status: value,
             })
           }
-          style={{ marginBottom: 10 }}
-        />
+          style={{ width: "100%", marginBottom: 10 }}
+        >
+          {statusOptions.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
+            </Option>
+          ))}
+        </Select>
+
         <Input
           placeholder="Vendor"
           value={selectedExpenseData.vendor}
