@@ -173,6 +173,32 @@ const Expenses = () => {
     }
   };
 
+  const convertToCSV = (data) => {
+    const headers =
+      "Description,Amount,Currency,Type,Payment Method,Status,Vendor,Notes\n";
+    const rows = data
+      .map(
+        (expense) =>
+          `"${expense.description}","${expense.amount}","${expense.currency}","${expense.type}","${expense.payment_method}","${expense.status}","${expense.vendor}","${expense.notes}"`
+      )
+      .join("\n");
+
+    return headers + rows;
+  };
+
+  const downloadCSV = (data) => {
+    const csvData = convertToCSV(data);
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "expenses.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const columns = [
     { title: "Description", dataIndex: "description", key: "description" },
     { title: "Amount", dataIndex: "amount", key: "amount" },
@@ -267,6 +293,15 @@ const Expenses = () => {
       >
         Add Expense
       </Button>
+
+      <Button
+        type="primary"
+        onClick={() => downloadCSV(expenses)}
+        style={{ marginBottom: 16, marginLeft: 8 }}
+      >
+        Export
+      </Button>
+
       <Spin spinning={loading}>
         <Table columns={columns} dataSource={filteredExpenses} rowKey="id" />
       </Spin>
